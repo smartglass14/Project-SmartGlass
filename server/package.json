@@ -1,0 +1,14 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "Project SmartGlass - server",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "@team-14-jayadhi-Ltd-internship",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}
