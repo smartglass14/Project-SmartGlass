@@ -3,7 +3,7 @@ import { adminAuth } from "../services/firebase.js";
 import jwt from "jsonwebtoken";
 
 export const authenticate =  async (req, res) => {
-  const { firebaseToken } = req.body;
+  const { name, firebaseToken } = req.body;
 
   try {
     const decoded = await adminAuth.verifyIdToken(firebaseToken);
@@ -13,7 +13,7 @@ export const authenticate =  async (req, res) => {
     if (!user) {
       user = await User.create({
         firebaseUID: decoded.uid,
-        name: decoded.name || "Anonymous",
+        name: decoded.name || name,
         email: decoded.email,
         role: "student"
       });
@@ -23,9 +23,8 @@ export const authenticate =  async (req, res) => {
       expiresIn: "7d"
     });
 
-    res.json({ token, user });
+    res.status(200).json({ token, user, message: "User authenticated!" });
   } catch (err) {
-    console.error(err);
     res.status(401).json({ message: "Invalid Firebase token" });
   }
 }
