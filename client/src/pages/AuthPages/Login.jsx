@@ -1,9 +1,20 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { toast } from "react-hot-toast";
+import { Eye, EyeClosed, LoaderCircle } from "lucide-react";
+import { useAuth } from "../../context/AuthContext.jsx";
+import { API, handleApi } from "../../services/api.js";
+import { loginUser, loginWithGoogle } from "../../firebase/firebase.js";
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({});
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const auth = useAuth();
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -18,8 +29,10 @@ export default function Login() {
     setErrors(newErrors);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
+    setLoading(true);
+    
     const newErrors = {};
     Object.entries(formData).forEach(([key, val]) => {
       if (!val.trim()) newErrors[key] = `${key.charAt(0).toUpperCase() + key.slice(1)} is required.`;
@@ -27,8 +40,61 @@ export default function Login() {
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
 
-    console.log("Login Successful:", formData);
+    try{
+      const { email, password } = formData;
+      let firebaseRes = await loginUser(email, password);
+
+      let res = await handleApi(API.post('/auth', { firebaseToken: firebaseRes.accessToken }));
+
+      if(res.status === 200){
+        const { token, user } = res.data;
+        auth.loginContext(user, token);
+        toast.success(res.data.message);
+        setLoading(false);
+        setFormData({ email: "", password: "" });
+        navigate("/");
+      }
+
+    }catch(err){
+      let msg = err.message;
+      const match = msg.match(/auth\/(\w+-\w+)/);
+      if (match) {
+        msg = match[1].replace(/-/g, " ");
+      }
+      toast.error(msg.charAt(0).toUpperCase() + msg.slice(1));
+      setLoading(false);
+    }
   };
+
+  const googleLoginHandler = async (e)=> {
+    e.preventDefault();
+    setLoading(true);
+        try{
+          let firebaseRes = await loginWithGoogle();
+
+          let res = await handleApi(API.post('/auth', {name, firebaseToken: firebaseRes.accessToken}));
+      
+          if(res.status === 200){
+            const { token, user } = res.data;
+            auth.loginContext(user, token);   
+            toast.success(res.data.message);
+            setLoading(false);
+            setFormData({ name: '', email: '', password: '' });
+            navigate('/');
+            setLoading(false);
+          }
+        } catch(err){
+
+          let msg = err.message;
+          const match = msg.match(/\(auth\/([^)]+)\)/);
+          if (match && match[1]) {
+            msg = match[1].replace(/-/g, " ");
+          }
+
+          toast.error(msg.charAt(0).toUpperCase() + msg.slice(1));
+          setLoading(false);
+        }     
+  }
 
   return (
     <div className="h-fit mt-10 bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex justify-center px-4">
@@ -51,9 +117,9 @@ export default function Login() {
               <p className="text-red-600 text-xs mt-1">{errors.email}</p>
             )}
           </div>
-          <div>
+          <div className="relative flex justify-center items-center">
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               name="password"
               placeholder="Password"
               value={formData.password}
@@ -63,12 +129,28 @@ export default function Login() {
             {errors.password && (
               <p className="text-red-600 text-xs mt-1">{errors.password}</p>
             )}
+
+            <span className='absolute right-3'>
+              {
+                !showPassword ? (
+                  <Eye className='hover:cursor-pointer' onClick={() => setShowPassword(true)} />
+                ) : (
+                  <EyeClosed className="hover:cursor-pointer" onClick={() => setShowPassword(false)} />
+                )
+              }
+            </span>
           </div>
+
           <button
             type="submit"
-            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 hover:cursor-pointer text-white font-semibold py-2.5 px-4 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl"
+            className="w-full flex justify-center items-center bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 hover:cursor-pointer text-white font-semibold py-2.5 px-4 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl"
           >
-            Login
+             { loading ? (
+                <LoaderCircle className="animate-spin text-white" />
+              ) : (
+                'Login'
+              )
+             }
           </button>
         </form>
 
@@ -79,7 +161,9 @@ export default function Login() {
         </div>
 
         <div>
-          <button className="w-full bg-white border border-gray-300 hover:bg-gray-600 hover:text-white hover:cursor-pointer text-gray-700 font-semibold py-2.5 px-4 rounded-xl transition-all duration-200 shadow-sm flex items-center justify-center gap-2">
+          <button className="w-full bg-white border border-gray-300 hover:bg-gray-600 hover:text-white hover:cursor-pointer text-gray-700 font-semibold py-2.5 px-4 rounded-xl transition-all duration-200 shadow-sm flex items-center justify-center gap-2"
+            onClick={googleLoginHandler}
+          >
             <span><i className="fa-brands fa-google"></i></span>
             Continue with Google
           </button>

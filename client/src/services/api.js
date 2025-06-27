@@ -1,13 +1,13 @@
 import axios from "axios";
 
-const API = axios.create({
-  baseURL: "http://localhost:4000/api",
+export const API = axios.create({
+  baseURL: import.meta.env.VITE_SERVER_URL,
 });
 
-const handleApi = async (promise) => {
+export const handleApi = async (promise) => {
   try {
     const res = await promise;
-    return { data: res.data, error: null };
+    return { data: res.data, status:res.status, error: null };
   } catch (error) {
     return {
       data: null,
@@ -15,12 +15,6 @@ const handleApi = async (promise) => {
     };
   }
 };
-
-export const login = async (email, password) =>
-  handleApi(API.post("/auth/login", { email, password }));
-
-export const registerUser = async (name, email, password) =>
-  handleApi(API.post("/auth/register", { name, email, password }));
 
 export const uploadFile = async (file) => {
   const formData = new FormData();

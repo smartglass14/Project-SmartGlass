@@ -1,15 +1,25 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { toast } from 'react-hot-toast';
+import { Eye, EyeClosed, LoaderCircle} from 'lucide-react';
+import { registerUser, loginWithGoogle } from '../../firebase/firebase.js';
+import { useAuth } from './../../context/AuthContext.jsx';
+import {API, handleApi} from '../../services/api.js';
+import { useNavigate } from 'react-router-dom';
 
 export default function Signup() {
-  const [form, setForm] = useState({ name: '', email: '', password: '' });
+
+  const [formData, setFormData] = useState({ name: '', email: '', password: '' });
   const [errors, setErrors] = useState({});
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const auth = useAuth();
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm({ ...form, [name]: value });
+    setFormData({ ...formData, [name]: value });
 
     const newErrors = { ...errors };
     if (!value) {
@@ -20,23 +30,76 @@ export default function Signup() {
     setErrors(newErrors);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
+    setLoading(true);
 
-    const hasErrors = Object.values(form).some((v) => v.trim() === '');
+    const hasErrors = Object.values(formData).some((v) => v.trim() === '');
     if (hasErrors) {
       const newErrors = {};
-      Object.entries(form).forEach(([key, val]) => {
+      Object.entries(formData).forEach(([key, val]) => {
         if (!val) newErrors[key] = `${key.charAt(0).toUpperCase() + key.slice(1)} is required.`;
       });
       setErrors(newErrors);
       return;
     }
 
-    console.log('Signup Successful:', form);
-    toast.success('Signup successful! Redirecting to login...', { position: 'top-right' });
-    setForm({ name: '', email: '', password: '' });
+    const { name, email, password } = formData;
+    try{
+      let firebaseRes = await registerUser(email, password);
+      
+      let res = await handleApi(API.post('/auth', {name, firebaseToken: firebaseRes.accessToken}));
+      
+      if(res.status === 200){
+        const { token, user } = res.data;
+        auth.loginContext(user, token);   
+        toast.success(res.data.message);
+        setLoading(false);
+        setFormData({ name: '', email: '', password: '' });
+        navigate('/');
+      }
+      
+    }catch (err) {
+        let msg = err.message;
+        const match = msg.match(/\(auth\/([^)]+)\)/);
+        if (match && match[1]) {
+          msg = match[1].replace(/-/g, " ");
+        }
+        toast.error(msg.charAt(0).toUpperCase() + msg.slice(1));
+        setLoading(false);
+      }
+
   };
+
+  const googleLoginHandler = async (e)=> {
+    e.preventDefault();
+    setLoading(true);
+        try{
+          let firebaseRes = await loginWithGoogle();
+
+          let res = await handleApi(API.post('/auth', {name, firebaseToken: firebaseRes.accessToken}));
+      
+          if(res.status === 200){
+            const { token, user } = res.data;
+            auth.loginContext(user, token);   
+            toast.success(res.data.message);
+            setLoading(false);
+            setFormData({ name: '', email: '', password: '' });
+            navigate('/');
+            setLoading(false);
+          }
+        } catch(err){
+
+          let msg = err.message;
+          const match = msg.match(/\(auth\/([^)]+)\)/);
+          if (match && match[1]) {
+            msg = match[1].replace(/-/g, " ");
+          }
+
+          toast.error(msg.charAt(0).toUpperCase() + msg.slice(1));
+          setLoading(false);
+        }     
+  }
 
   return (
     <div className="h-fit bg-gradient-to-br from-indigo-100 to-white flex flex-col justify-center items-center p-6">
@@ -59,7 +122,7 @@ export default function Signup() {
             type="text"
             name="name"
             autoComplete="name"
-            value={form.name}
+            value={formData.name}
             onChange={handleChange}
           />
           {errors.name && (
@@ -76,7 +139,7 @@ export default function Signup() {
             type="email"
             name="email"
             autoComplete="email"
-            value={form.email}
+            value={formData.email}
             onChange={handleChange}
           />
           {errors.email && (
@@ -88,14 +151,28 @@ export default function Signup() {
           <label htmlFor="password" className="block text-gray-700 text-sm font-bold mb-2">
             Password
           </label>
-          <input
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring focus:ring-indigo-300"
-            type="password"
-            name="password"
-            autoComplete="current-password"
-            value={form.password}
-            onChange={handleChange}
-          />
+
+          <div className='relative flex justify-center items-center w-full'>
+            <input
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring focus:ring-indigo-300"
+              type={showPassword ? "text" : "password"}
+              name="password"
+              autoComplete="current-password"
+              value={formData.password}
+              onChange={handleChange}
+            />
+            
+            <span className='absolute right-3'>
+              {
+                !showPassword ? (
+                  <Eye className='hover:cursor-pointer' onClick={() => setShowPassword(true)} />
+                ) : (
+                  <EyeClosed className="hover:cursor-pointer" onClick={() => setShowPassword(false)} />
+                )
+              }
+            </span>
+          </div>
+
           {errors.password && (
             <p className="text-red-600 text-xs mt-1">{errors.password}</p>
           )}
@@ -103,9 +180,13 @@ export default function Signup() {
 
         <button
           type="submit"
-          className="w-full bg-indigo-600 hover:bg-indigo-700 hover:cursor-pointer text-white font-bold py-2 px-4 rounded focus:outline-none focus:ring focus:ring-indigo-300 transition duration-300"
+          className="w-full flex justify-center items-center bg-indigo-600 hover:bg-indigo-700 hover:cursor-pointer text-white font-bold py-2 px-4 rounded focus:outline-none focus:ring focus:ring-indigo-300 transition duration-300"
         >
-          Sign Up
+          {loading ? (
+            <LoaderCircle className="animate-spin text-white" />
+          ) : (
+            'Sign Up'
+          )}
         </button>
 
         <div className="flex items-center my-4">
@@ -115,7 +196,9 @@ export default function Signup() {
           </div>
 
         <div>
-          <button className="w-full bg-white border border-gray-300 hover:bg-gray-600 hover:text-white hover:cursor-pointer text-gray-700 font-semibold py-2.5 px-4 rounded transition-all duration-200 shadow-sm flex items-center justify-center gap-2">
+          <button className="w-full bg-white border border-gray-300 hover:bg-gray-600 hover:text-white hover:cursor-pointer text-gray-700 font-semibold py-2.5 px-4 rounded transition-all duration-200 shadow-sm flex items-center justify-center gap-2"
+            onClick={googleLoginHandler}
+          >
             <span><i className="fa-brands fa-google"></i></span>
             Continue with Google
           </button> 
@@ -128,8 +211,6 @@ export default function Signup() {
           </Link>
         </p>
       </form>
-      
-      <ToastContainer />
     </div>
   );
 }
