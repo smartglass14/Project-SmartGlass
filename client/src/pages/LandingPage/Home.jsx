@@ -26,6 +26,13 @@ export default function Home() {
           >
             🤖 Chat with AI
           </Link>
+
+          <Link
+            to="/quiz"
+            className="px-6 py-3 text-white rounded-xl font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-md hover:shadow-lg w-full sm:w-auto text-center"
+          >
+             📝 Take Quiz
+          </Link>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
@@ -45,6 +52,14 @@ export default function Home() {
               Get instant help or answers from our smart and friendly AI-powered assistant.
             </p>
           </div>
+                    <div className="p-6 bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-2xl shadow-md hover:shadow-lg transition duration-200">
+            <h2 className="text-xl font-semibold text-indigo-700 mb-2">
+              📝 Take a Quiz
+            </h2>
+            <p className="text-gray-700 text-sm">
+              Test your knowledge with our interactive quizzes. Learn and have fun at the same time!
+            </p>
+            </div>
         </div>
       </div>
     </div>
