@@ -7,6 +7,7 @@ import socketSetup from "./socket/socket.js";
 import authRoutes from "./Routes/auth.routes.js";
 import sessionRoutes from "./routes/session.routes.js";
 import uploadRoutes from "./routes/upload.routes.js";
+import chatRoutes from "./routes/chat.routes.js";
 
 dotenv.config();
 
@@ -28,6 +29,7 @@ app.get("/", (req, res) => res.send("Server is running! :)"));
 app.use("/api/auth", authRoutes);
 app.use("/api/session", sessionRoutes);
 app.use("/api/upload", uploadRoutes);
+app.use("/api/chat", chatRoutes)
 
 socketSetup(server);
 
