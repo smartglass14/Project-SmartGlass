@@ -54,7 +54,7 @@ export default function Home() {
           </div>
                     <div className="p-6 bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-2xl shadow-md hover:shadow-lg transition duration-200">
             <h2 className="text-xl font-semibold text-indigo-700 mb-2">
-              📝 Take a Quiz
+              📝 General Knowledge Quiz
             </h2>
             <p className="text-gray-700 text-sm">
               Test your knowledge with our interactive quizzes. Learn and have fun at the same time!
