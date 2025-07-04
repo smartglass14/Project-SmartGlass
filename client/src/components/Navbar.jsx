@@ -159,7 +159,7 @@ export default function Navbar() {
                 </span>
               </Link>
               <Link
-                to="/chatbot"
+                to="/chat"
                 className={mobileLinkClass("/chatbot")}
                 onClick={() => setIsMobileMenuOpen(false)}
               >

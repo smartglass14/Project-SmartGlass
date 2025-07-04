@@ -1,24 +1,23 @@
 import { Schema, model } from "mongoose";
 
-const chatSchema = new Schema({
-  sessionId: {
-    type: Schema.Types.ObjectId,
-    ref: "Session",
-    required: true
-  },
-  sender: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-    required: true
-  },
-  message: {
+const messageSchema = new Schema({
+  role: {
     type: String,
+    enum: ['user', 'assistant'],
     required: true
   },
-  sentAt: {
-    type: Date,
-    default: Date.now
-  }
+  content: { type: String, required: true },
+  timestamp: { type: Date, default: Date.now }
 });
 
-export default model("Chat", chatSchema);
+const chatSchema = new Schema({
+  title: { type: String, required:true },
+  userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  documentIds: [{ type: Schema.Types.ObjectId, ref: 'Document' }],
+  startedAt: { type: Date, default: Date.now },
+  messages: [messageSchema]
+});
+
+const Chat = mongoose.model('Chat', chatSchema);
+
+export default Chat;

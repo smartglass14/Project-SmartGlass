@@ -62,7 +62,7 @@ export default function Home() {
           </Link>
           
           <Link
-            to="/chatbot"
+            to="/chat"
             className="px-6 py-3 text-blue-700 border border-blue-600 bg-white rounded-xl font-semibold hover:bg-blue-50 transition duration-200 shadow-md hover:shadow-lg w-full sm:w-auto text-center"
           >
             🤖 Chat with AI
