@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-import { sendMessageToBot } from "../services/api";
 
 export default function Chatbot() {
   const [messages, setMessages] = useState([
@@ -18,7 +17,7 @@ export default function Chatbot() {
     setIsTyping(true);
 
     try {
-      const res = await sendMessageToBot(input);
+      const res = await fetch("https://api.example.com/chat");
       const botReply = res?.data?.reply || "🤖 I'm not sure how to respond.";
       setTimeout(() => {
         setMessages([...updatedMessages, { sender: "bot", text: botReply }]);

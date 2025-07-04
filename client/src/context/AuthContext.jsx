@@ -15,7 +15,7 @@ export const AuthProvider = ({ children }) => {
     const storedUser = localStorage.getItem("user");
     const storedToken = localStorage.getItem("authToken");
 
-    if (storedUser && storedToken) {
+    if ((storedUser && storedToken) && (storedUser!=undefined && storedToken!==undefined)) {
       setUser(JSON.parse(storedUser));
       setAuthToken(storedToken);
       setIsLoggedIn(true);
@@ -24,7 +24,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const loginContext = (userData, token) => {
-    let newUser = { email: userData.email, name: userData.name, id: userData._id, role: userData.role, firebaseUID: userData.firebaseUID };
+    let newUser = { email: userData.email, name: userData.name, id: userData._id, role: userData.role || null , firebaseUID: userData.firebaseUID };
     setUser(newUser);
     setAuthToken(token);
     setIsLoggedIn(true);
@@ -32,7 +32,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem("authToken", token);
   };
 
-  const logoutContext = () => {
+  const logOutUser = () => {
     localStorage.removeItem("user");
     localStorage.removeItem("authToken");
     setUser(null);
@@ -49,7 +49,7 @@ export const AuthProvider = ({ children }) => {
         isLoggedIn,
         loading,
         loginContext,
-        logoutContext,
+        logOutUser,
         setUser,
         setAuthToken,
       }}

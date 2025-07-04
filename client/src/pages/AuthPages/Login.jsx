@@ -47,6 +47,7 @@ export default function Login() {
       let res = await handleApi(API.post('/auth', { firebaseToken: firebaseRes.accessToken }));
 
       if(res.status === 200){
+
         const { token, user } = res.data;
         auth.loginContext(user, token);
         toast.success(res.data.message);
@@ -97,6 +98,7 @@ export default function Login() {
   }
 
   return (
+
     <div className="h-fit mt-10 bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex justify-center px-4">
       <div className="w-full max-w-md bg-white/80 backdrop-blur-lg shadow-2xl rounded-2xl p-8 border border-gray-100">
         <h2 className="text-3xl font-extrabold text-center bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-8">

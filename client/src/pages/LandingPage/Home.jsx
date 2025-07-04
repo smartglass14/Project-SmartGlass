@@ -1,8 +1,49 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
+import RolePopup from "../../components/RolePopup";
+import { useAuth } from "../../context/AuthContext";
+import { useState } from "react";
+import {API, handleApi} from "../../services/api";
+import toast from "react-hot-toast";
 
 export default function Home() {
+  const auth = useAuth();
+  const [showRolePopup, setShowRolePopup] = useState(false);
+
+  useEffect(()=> {
+    if (auth.user && !auth.user.role) {
+      setShowRolePopup(true);
+    }
+  },[auth.user])
+
+  const saveRole = async (role) => {
+    if (!role) return;
+    try {
+      let res = await handleApi(API.put("/auth/role", { role }, {
+        headers: {
+          "Authorization": `Bearer ${auth.authToken}`,
+        },
+        withCredentials: true }));
+
+        if (res.status === 200) {
+          auth.loginContext( res.data.user, auth.authToken);
+          setShowRolePopup(false);
+          toast.success(res.data.message);
+       }
+
+      if(res.error){
+        toast.error(res.error.message || "Failed to save role. Please try again.");
+      }
+
+    } catch (error) {
+      console.error("Error saving role:", error);
+    }
+  };
+
   return (
+   <>
+      {showRolePopup && <RolePopup onConfirm={saveRole} onClose={()=> setShowRolePopup(false)}/> }
+
     <div className="min-h-screen bg-gradient-to-br from-blue-100 via-white to-indigo-100 px-4 py-20">
       <div className="max-w-4xl mx-auto text-center bg-white/70 backdrop-blur-xl p-10 rounded-3xl shadow-2xl border border-gray-200">
         <h1 className="text-5xl sm:text-4xl font-bold bg-gradient-to-r from-blue-700 to-indigo-700 bg-clip-text text-transparent mb-6 animate-fade-in">
@@ -48,5 +89,6 @@ export default function Home() {
         </div>
       </div>
     </div>
+   </>
   );
 }
