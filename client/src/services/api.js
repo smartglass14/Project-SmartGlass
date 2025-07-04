@@ -11,20 +11,9 @@ export const handleApi = async (promise) => {
   } catch (error) {
     return {
       data: null,
-      error: error.response?.data?.message || error.message || "Unknown error",
+      status: error.response?.status || 500,
+      error: error.response?.data || error || "Unknown error",
     };
   }
 };
 
-export const uploadFile = async (file) => {
-  const formData = new FormData();
-  formData.append("file", file);
-  return handleApi(
-    API.post("/upload", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    })
-  );
-};
-
-export const sendMessageToBot = async (message) =>
-  handleApi(API.post("/chatbot", { message }));

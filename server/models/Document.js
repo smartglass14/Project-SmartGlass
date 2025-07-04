@@ -6,8 +6,20 @@ const documentSchema = new Schema({
     ref: "User",
     required: true
   },
-  originalName: String,
+  fileType: {
+    type: String,
+    enum: ["pdf","txt"],
+    required: true
+  },
+  originalName: {
+    type: String,
+    required: true
+  },
   fileUrl: {
+    type: String,
+    required: true
+  },
+  public_id:{
     type: String,
     required: true
   },
@@ -20,4 +32,6 @@ const documentSchema = new Schema({
   }
 });
 
-export default model("Document", documentSchema);
+const Document = model("Document", documentSchema);
+
+export default Document;

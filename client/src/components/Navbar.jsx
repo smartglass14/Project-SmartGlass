@@ -1,9 +1,13 @@
 import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
+import {useAuth} from "../context/AuthContext";
+import toast from "react-hot-toast";
 
 export default function Navbar() {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const auth = useAuth();
 
   const isActive = (path) => location.pathname === path;
 
@@ -20,6 +24,12 @@ export default function Navbar() {
         ? "bg-blue-500 text-white shadow-lg"
         : "text-gray-700 hover:bg-blue-50 hover:text-blue-600"
     }`;
+
+  const handleLogout = () => {
+    auth.logOutUser();
+    setIsMobileMenuOpen(false); 
+    toast.success("User Logged Out!")
+  }
 
   return (
     <nav className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 backdrop-blur-lg bg-opacity-90 sticky top-0 z-50 shadow-2xl border-b border-white/10">
@@ -78,12 +88,22 @@ export default function Navbar() {
             </div>
 
             {/* Login Button */}
-            <Link
+            {!auth.isLoggedIn? 
+            (<Link
               to="/login"
-              className="ml-4 px-6 py-2 bg-white text-blue-600 rounded-xl font-semibold hover:bg-blue-50 hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
+              className="ml-4 px-6 py-2 hover:cursor-pointer bg-white text-blue-600 rounded-xl font-semibold hover:bg-blue-50 hover:scale-105 transition-all duration-100 shadow-lg hover:shadow-xl"
             >
               Login
-            </Link>
+            </Link>) :
+
+            (<button className="ml-4 px-6 py-2 hover:cursor-pointer bg-white text-blue-600 rounded-xl font-semibold hover:bg-blue-50 hover:scale-105 transition-all duration-100 shadow-lg hover:shadow-xl"
+              onClick={handleLogout}
+            >
+              Logout 
+            </button>)
+
+            }
+
           </div>
 
           {/* Mobile menu button */}
@@ -104,7 +124,7 @@ export default function Navbar() {
         {/* Mobile Navigation */}
         <div
           className={`md:hidden transition-all duration-300 ease-in-out ${
-            isMobileMenuOpen ? "max-h-64 opacity-100 pb-4" : "max-h-0 opacity-0 overflow-hidden"
+            isMobileMenuOpen ? "max-h-64 opacity-100 pb-4 mb-3" : "max-h-0 opacity-0 overflow-hidden"
           }`}
         >
           <div className="bg-white rounded-2xl mt-4 p-4 shadow-xl border border-gray-100">

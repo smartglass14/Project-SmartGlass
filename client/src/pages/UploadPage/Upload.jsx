@@ -1,7 +1,24 @@
 import DocumentUpload from "../../components/DocumentUpload";
 import { DocumentArrowUpIcon, CloudArrowUpIcon, SparklesIcon } from '@heroicons/react/24/outline';
+import { useAuth } from "../../context/AuthContext";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-hot-toast";
+
 
 export default function Upload() {
+  
+  const auth = useAuth();
+  const navigate = useNavigate();
+  
+  useEffect(()=> {
+    if(!auth.loading && !auth.user && !auth.isLoggedIn) {
+      navigate('/login');
+      toast.error("You need to be sign in to uploading files.");
+    }
+  },[auth.user, auth.loading ,auth.isLoggedIn, navigate]);
+
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 relative overflow-hidden">
       {/* Animated background elements */}
@@ -29,7 +46,7 @@ export default function Upload() {
             </h1>
             
             <p className="text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
-              Drag and drop your files or browse to upload. We support multiple formats 
+              Drag and drop your files or browse to upload. We support multiple files upload 
               and ensure your documents are processed securely.
             </p>
           </div>
@@ -58,10 +75,10 @@ export default function Upload() {
                 <div className="bg-gradient-to-r from-blue-500 to-cyan-500 p-2 rounded-lg group-hover:scale-110 transition-transform duration-300">
                   <DocumentArrowUpIcon className="w-6 h-6 text-white" />
                 </div>
-                <h3 className="text-lg font-semibold text-slate-800">Multiple Formats</h3>
+                <h3 className="text-lg font-semibold text-slate-800">Multiple Files upload</h3>
               </div>
               <p className="text-slate-600">
-                Support for PDF, DOC, DOCX, TXT, and many other document formats.
+                Support multiiple PDF files upload with drag-and-drop functionality.
               </p>
             </div>
 
@@ -90,7 +107,7 @@ export default function Upload() {
         </div>
       </div>
 
-      <style jsx>{`
+      <style jsx={toString()}>{`
         @keyframes blob {
           0% {
             transform: translate(0px, 0px) scale(1);

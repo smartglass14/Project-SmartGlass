@@ -9,6 +9,6 @@ export default function jwtAuth (req, res, next) {
     req.userId = decoded.id;
     next();
   } catch (err) {
-    return res.status(401).json({ message: "Invalid token" });
+    return res.status(401).json({ message: "Unauthorized!" });
   }
 };

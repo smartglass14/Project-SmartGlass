@@ -18,7 +18,7 @@ export default function App() {
         <div className="min-h-screen flex flex-col bg-gray-50">
           <Navbar />
           <Toaster position="top-center" /> 
-          <main className="flex-grow pt-6 pb-12 px-4">
+          <main className="flex-grow">
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/upload" element={<Upload />} />
