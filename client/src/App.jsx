@@ -5,6 +5,7 @@ import Home from "./pages/LandingPage/Home";
 import Upload from "./pages/UploadPage/Upload";
 import ChatbotPage from "./pages/ChatbotPage";
 import Login from "./pages/AuthPages/Login";
+import QuizPage from "./pages/QuizPage";
 import Signup from "./pages/AuthPages/Signup";
 import ResetPassword from "./pages/AuthPages/ResetPassword";
 import NotFound from './pages/NotFound.jsx';
@@ -24,6 +25,7 @@ export default function App() {
               <Route path="/upload" element={<Upload />} />
               <Route path="/chatbot" element={<ChatbotPage />} />
               <Route path="/login" element={<Login />} />
+              <Route path= "/quiz" element={ <QuizPage /> }/>
               <Route path="/signup" element={<Signup />} /> 
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="*" element={<NotFound />}/>
