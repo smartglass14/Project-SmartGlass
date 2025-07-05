@@ -1,7 +1,19 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
-const sampleQuestions = [
-  { id: 1, question: "Which planet is known as the Red Planet?", type: "mcq", options: ["Earth", "Venus", "Mars", "Jupiter"], answer: "Mars" },
+export default function Quiz({ onComplete }) {
+  const [questions, setQuestions] = useState([]);
+  const [current, setCurrent] = useState(0);
+  const [userAnswers, setUserAnswers] = useState([]);
+  const [timeLeft, setTimeLeft] = useState(30); // 30 sec per question
+
+  useEffect(() => {
+    // Fetch quiz questions from backend
+    fetch("/api/quiz/questions")
+      .then(res => res.json())
+      .then(data => setQuestions(data))
+      .catch(() => {
+        setQuestions([
+          { id: 1, question: "Which planet is known as the Red Planet?", type: "mcq", options: ["Earth", "Venus", "Mars", "Jupiter"], answer: "Mars" },
   { id: 2, question: "What is the national bird of India?", type: "mcq", options: ["Parrot", "Peacock", "Sparrow", "Eagle"], answer: "Peacock" },
   { id: 3, question: "In which direction does the sun rise?", type: "mcq", options: ["North", "South", "East", "West"], answer: "East" },
   { id: 4, question: "How many continents are there on Earth?", type: "mcq", options: ["5", "6", "7", "8"], answer: "7" },
@@ -12,110 +24,80 @@ const sampleQuestions = [
   { id: 9, question: "Name one device used to measure temperature.", type: "text", answer: "Thermometer" },
   { id: 10, question: "What is the capital of India?", type: "mcq", options: ["Mumbai", "New Delhi", "Kolkata", "Chennai"], answer: "New Delhi" },
   { id: 11, question: "Which gas do plants absorb from the atmosphere?", type: "mcq", options: ["Oxygen", "Carbon Dioxide", "Nitrogen", "Hydrogen"], answer: "Carbon Dioxide" },
-];
 
-function Quiz() {
-  const [current, setCurrent] = useState(0);
-  const [userAnswer, setUserAnswer] = useState("");
-  const [feedback, setFeedback] = useState("");
-  const [submitted, setSubmitted] = useState(false);
-  const [score, setScore] = useState(0);
-  const [finished, setFinished] = useState(false);
+        ]);
+      });
+  }, []);
 
-  const question = sampleQuestions[current];
+  useEffect(() => {
+    if (timeLeft === 0) handleSubmit();
+    const timer = setInterval(() => setTimeLeft(t => t - 1), 1000);
+    return () => clearInterval(timer);
+  }, [timeLeft]);
 
   const handleSubmit = () => {
-    let correct = false;
-    if (question.type === "mcq") {
-      correct = userAnswer === question.answer;
+    const currentQuestion = questions[current];
+    setUserAnswers(prev => [
+      ...prev,
+      { qid: currentQuestion.id, answer: userAnswer, timeTaken: 30 - timeLeft }
+    ]);
+    if (current + 1 === questions.length) {
+      onComplete(userAnswers.concat({ qid: currentQuestion.id, answer: userAnswer, timeTaken: 30 - timeLeft }));
     } else {
-      correct = userAnswer.trim().toLowerCase().includes(question.answer.toLowerCase());
-    }
-    if (correct) setScore(score + 1);
-    setFeedback(correct ? "✅ Great job!" : "❌ Try again.");
-    setSubmitted(true);
-  };
-
-  const handleNext = () => {
-    if (current + 1 >= sampleQuestions.length) {
-      setFinished(true);
-    } else {
-      setCurrent(current + 1);
+      setCurrent(c => c + 1);
       setUserAnswer("");
-      setFeedback("");
-      setSubmitted(false);
+      setTimeLeft(30);
     }
   };
 
-  const restartQuiz = () => {
-    setCurrent(0);
-    setUserAnswer("");
-    setFeedback("");
-    setSubmitted(false);
-    setScore(0);
-    setFinished(false);
-  };
+  const [userAnswer, setUserAnswer] = useState("");
 
-  if (finished) {
-    return (
-      <div className="bg-white p-6 sm:p-8 rounded-xl shadow-xl w-full max-w-xl text-center">
-        <h2 className="text-2xl font-bold text-purple-700 mb-4">🎉 Quiz Completed!</h2>
-        <p className="text-lg font-medium mb-2">Your Score :</p>
-        <p className="text-4xl font-extrabold text-green-600">{score} / {sampleQuestions.length}</p>
-        <button
-          onClick={restartQuiz}
-          className="mt-6 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded transition"
-        >
-          Restart Quiz
-        </button>
-      </div>
-    );
-  }
+  if (!questions.length) return <p>Loading questions...</p>;
+
+  const q = questions[current];
 
   return (
-    <div className="bg-white p-6 sm:p-8 rounded-xl shadow-xl w-full max-w-xl">
-      <h2 className="text-2xl font-bold text-purple-700 mb-4">📝 Quiz Time!</h2>
-      <p className="text-lg font-medium mb-4">{question.question}</p>
+    <div className="bg-white p-6 rounded-lg shadow w-full max-w-2xl">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-lg font-bold">Question {current + 1}</h2>
+        <p className="text-red-600 font-semibold">⏱️ {timeLeft}s</p>
+      </div>
+      <p className="mb-3">{q.question}</p>
 
-      {question.type === "mcq" ? (
+      {q.type === "mcq" ? (
         <div className="space-y-2 mb-4">
-          {question.options.map((option) => (
-            <label key={option} className="flex items-center gap-2 bg-purple-50 p-2 rounded hover:bg-purple-100 cursor-pointer">
-              <input type="radio" name="option" value={option} checked={userAnswer === option} onChange={() => setUserAnswer(option)} />
-              <span>{option}</span>
+          {q.options.map((opt) => (
+            <label key={opt} className="flex items-center gap-2">
+              <input
+                type="radio"
+                name="option"
+                value={opt}
+                checked={userAnswer === opt}
+                onChange={() => setUserAnswer(opt)}
+              />
+              {opt}
             </label>
           ))}
         </div>
       ) : (
-        <textarea
-          rows="3"
+        <input
+          type="text"
           value={userAnswer}
           onChange={(e) => setUserAnswer(e.target.value)}
-          className="w-full p-3 border rounded-md mb-4"
-          placeholder="Type your answer here..."
+          placeholder="Type your answer"
+          className="border p-2 rounded w-full mb-4"
         />
       )}
 
-      {!submitted ? (
-        <button
-          onClick={handleSubmit}
-          className="bg-purple-600 hover:bg-purple-700 text-white font-semibold px-4 py-2 rounded transition w-full"
-        >
-          Submit Answer
-        </button>
-      ) : (
-        <div className="text-center mt-4 space-y-4">
-          <p className="text-lg font-semibold">{feedback}</p>
-          <button
-            onClick={handleNext}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
-          >
-            {current + 1 === sampleQuestions.length ? "See Result" : "Next Question"}
-          </button>
-        </div>
-      )}
+      <button
+        onClick={handleSubmit}
+        className="bg-blue-600 text-white px-4 py-2 rounded"
+      >
+        Submit
+      </button>
     </div>
   );
 }
 
-export default Quiz;
+
+
