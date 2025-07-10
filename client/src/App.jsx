@@ -11,6 +11,7 @@ import ResetPassword from "./pages/AuthPages/ResetPassword";
 import NotFound from './pages/NotFound.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';
 import { Toaster } from "react-hot-toast";
+import Dashboard from "./pages/Dashboard";
 
 function Layout({ children }) {
   const location = useLocation();
@@ -40,6 +41,8 @@ export default function App() {
             <Route path="/signup" element={<Signup />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="*" element={<NotFound />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+
           </Routes>
         </Layout>
       </Router>
