@@ -39,19 +39,19 @@ export default function Dashboard() {
             {user.role === "Educator" ? (
               <>
                 <SectionCard
-                  title="Create Sessions"
+                  title="Create Poll"
                   icon="👩‍🎓"
-                  description="24 active students today."
+                  description="Manage and organize your learning sessions."
                 />
                 <SectionCard
-                  title="Quiz Scores"
-                  icon="📈"
-                  description="Average Score: 81%"
+                  title="Create Quizzes"
+                  icon="📝"
+                  description="Design quizzes for students and evaluate results."
                 />
                 <SectionCard
                   title="Session Analytics"
                   icon="⏱"
-                  description="Average session time: 18 minutes."
+                  description="Insights on student activity and sessions."
                 />
                 <SectionCard
                   title="History"
@@ -64,7 +64,7 @@ export default function Dashboard() {
                 <SectionCard
                   title="Join Sessions"
                   icon="🧠"
-                  description="Challenge yourself and track your progress."
+                  description="Participate in educator-hosted live sessions."
                 />
                  <SectionCard
                   title="Uploaded Documents"
@@ -76,6 +76,17 @@ export default function Dashboard() {
                   icon="🤖"
                   description="Ask questions and get instant AI support."
                 />
+                <SectionCard
+                  title="My Progress"
+                  icon="📊"
+                  description="View your quiz scores, session attendance, and learning growth over time."
+                />
+                <SectionCard
+                  title="Learning Resources"
+                  icon="📚"
+                  description="Explore curated tutorials, notes, and extra material shared by educators."
+                />
+                
               </>
             )}
           </div>
