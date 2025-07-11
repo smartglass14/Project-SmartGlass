@@ -12,6 +12,7 @@ import { AuthProvider } from './context/AuthContext.jsx';
 import { Toaster } from "react-hot-toast";
 import QuizPage from "./pages/QuizPages/QuizPage.jsx";
 import CreateQuiz from "./pages/QuizPages/CreateQuiz.jsx";
+import Dashboard from "./pages/Dashboard.jsx"
 
 function Layout({ children }) {
   const location = useLocation();
@@ -36,13 +37,15 @@ export default function App() {
             <Route path="/upload" element={<Upload />} />
             <Route path="/chat" element={<ChatbotPage />} />
             <Route path="/chat/:id" element={<ChatbotPage />} />
-            <Route path="/quiz/:code" element={<QuizPage />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/create/quiz" element={ <CreateQuiz /> } />
+            <Route path="/quiz/:code" element={<QuizPage />} />
             <Route path="/results/quiz/:code" element={ <CreateQuiz /> } />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="*" element={<NotFound />} />
+
           </Routes>
         </Layout>
       </Router>
