@@ -8,17 +8,19 @@ function generateAccessCode() {
   }
 
 export const createSession = async (req, res) => {
+
     try {
-      const { name } = req.body;
+      const { sessionType } = req.body;
       const educatorId = req.userId;
+      const sessionCode = generateAccessCode();
   
       const session = await Session.create({
-        name,
-        accessCode: generateAccessCode(),
+        sessionType,
+        sessionCode,
         educator: educatorId,
       });
   
-      res.status(201).json(session);
+      res.status(201).json({sessionId: session._id, sessionCode});
     } catch (err) {
       console.error(err);
       res.status(500).json({ message: "Failed to create session" });
