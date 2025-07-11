@@ -11,5 +11,3 @@ router.get('/:id', jwtAuth, wrapAsync(getChatById))
 router.delete('/:id', jwtAuth, wrapAsync(deleteChat))
 
 export default router;
-
-
