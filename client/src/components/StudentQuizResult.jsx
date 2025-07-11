@@ -1,4 +1,7 @@
-export default function StudentQuizResult({ userAnswers, questions }) {
+import { Link } from "react-router-dom";
+
+export default function StudentQuizResult({ userAnswers, questions, isLoggedIn=false }) {
+
     if (!userAnswers || !questions) return null;
   
     const totalQuestions = questions.length;
@@ -15,6 +18,13 @@ export default function StudentQuizResult({ userAnswers, questions }) {
           <p className="text-xl font-medium text-gray-700">
             You scored <span className="text-purple-600 font-bold">{score}</span> out of <span className="font-bold">{totalQuestions}</span>
           </p>
+            <div className="mt-5">
+              {!isLoggedIn &&  <p className="text-lg font-semi-bold mb-3"> To access more features </p> }
+              {isLoggedIn? 
+                <Link to="/dashboard" className="bg-blue-600 hover:bg-blue-500 text-white py-2 px-3 rounded-lg font-semibold" > Dashboard </Link> :
+                <Link to="/login" className="bg-blue-600 hover:bg-blue-500 text-white py-2 px-3 rounded-lg font-semibold" > Login </Link>
+              }
+            </div>
         </div>
       </div>
     );

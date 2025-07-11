@@ -1,6 +1,6 @@
 import { Server } from "socket.io";
 import socketAuth from "../middleware/socketAuth.js";
-import { updateAnswer } from "./socketController.js";
+import { updateAnswer, submitVote } from "./socketController.js";
 
 export default (server) => {
   const io = new Server(server, {
@@ -24,6 +24,10 @@ export default (server) => {
     socket.on('submit-answer', async({ data }) => {
         updateAnswer(data, socket);
     });
+
+    socket.on('submit-vote', async(data)=> {
+       submitVote(data, socket);
+    })
 
     socket.on("send-message", ({ room, message }) => {
       io.to(room).emit("receive-message", message);

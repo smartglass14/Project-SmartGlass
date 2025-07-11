@@ -9,8 +9,6 @@ export default function Navbar() {
 
   const auth = useAuth();
 
-  const { role } = auth.user || {};
-
   const isActive = (path) => location.pathname === path;
 
   const linkClass = (path) =>
@@ -87,7 +85,7 @@ export default function Navbar() {
                   Chatbot
                 </span>
               </Link>
-              {auth?.user?.role === "admin" && (
+              {auth?.user && (
               <Link to="/dashboard" className={linkClass("/dashboard")}>
                 <span className="flex items-center gap-2">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -141,7 +139,7 @@ export default function Navbar() {
         {/* Mobile Navigation */}
         <div
           className={`md:hidden transition-all duration-300 ease-in-out ${
-            isMobileMenuOpen ? "max-h-64 opacity-100 pb-4 mb-3" : "max-h-0 opacity-0 overflow-hidden"
+            isMobileMenuOpen ? "max-h-80 opacity-100 pb-4 mb-3" : "max-h-0 opacity-0 overflow-hidden"
           }`}
         >
           <div className="bg-white rounded-2xl mt-4 p-4 shadow-xl border border-gray-100">
@@ -192,7 +190,7 @@ export default function Navbar() {
                   Chatbot
                 </span>
               </Link>
-              {role === "admin" && (
+              {auth?.user && (
                <Link
                 to="/dashboard"
                 className={mobileLinkClass("/dashboard")}

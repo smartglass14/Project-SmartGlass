@@ -51,9 +51,47 @@ export const getQuizByCode = async(req, res)=> {
             return res.status(400).json({message: "Invalid Session Code"});
         }
 
+        if(session.expiresAt <= Date.now){
+            return res.status(400).json({message: "Quiz time Expired"})
+        }
+
         const quiz = await Quiz.findOne({session: session._id});
+        if(!quiz){
+            return res.status(400).json({message: "Can not find Quiz"});
+        }
         res.status(200).json({quiz});
 
+    }catch(err){
+        console.log(err);
+        return res.status(500).json({message: "Failed to access Quiz"});
+    }   
+}
+
+export const getQuizResult = async (req, res) => {
+    try{
+        const { code:sessionCode } = req.params;
+        const userId = req.userId;
+
+        if(!sessionCode){
+            return res.status(400).json({message: "Session Code needed"});
+        }
+
+        const session = await Session.findOne({sessionCode}).populate('educator');
+        if(!session){
+            return res.status(400).json({message: "Invalid Session Code"});
+        }
+
+        if(String(userId) !== String(session.educator._id)){
+            return res.status(402).json({message: "Unauthorized! only creater can access result"});
+        }
+
+        const quiz = await Quiz.findOne({session: session._id});
+        
+        if(!quiz){
+            return res.status(400).json({message: "Can not find Quiz"});
+        }
+        res.status(200).json({quiz});
+    
     }catch(err){
         console.log(err);
         return res.status(500).json({message: "Failed to access Quiz"});

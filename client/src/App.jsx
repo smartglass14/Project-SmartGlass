@@ -12,6 +12,10 @@ import { AuthProvider } from './context/AuthContext.jsx';
 import { Toaster } from "react-hot-toast";
 import QuizPage from "./pages/QuizPages/QuizPage.jsx";
 import CreateQuiz from "./pages/QuizPages/CreateQuiz.jsx";
+import QuizResult from "./pages/QuizPages/QuizResult.jsx";
+import CreatePoll from "./pages/PollPage/CreatePoll.jsx";
+import PollPage from "./pages/PollPage/PollPage.jsx";
+import PollResult from "./pages/PollPage/PollResult.jsx";
 import Dashboard from "./pages/Dashboard.jsx"
 
 function Layout({ children }) {
@@ -41,8 +45,11 @@ export default function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/create/quiz" element={ <CreateQuiz /> } />
+            <Route path="/create/poll" element={ <CreatePoll /> } />
             <Route path="/quiz/:code" element={<QuizPage />} />
-            <Route path="/results/quiz/:code" element={ <CreateQuiz /> } />
+            <Route path="/results/quiz/:code" element={ <QuizResult /> } />
+            <Route path="/poll/:code" element={ <PollPage /> } />
+            <Route path="/results/poll/:code" element={ <PollResult /> } />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="*" element={<NotFound />} />
 

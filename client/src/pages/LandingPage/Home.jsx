@@ -1,13 +1,15 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import RolePopup from "../../components/RolePopup";
 import { useAuth } from "../../context/AuthContext";
 import { useState } from "react";
 import {API, handleApi} from "../../services/api";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 export default function Home() {
   const auth = useAuth();
+  const navigate = useNavigate();
   const [showRolePopup, setShowRolePopup] = useState(false);
 
   useEffect(()=> {
@@ -29,6 +31,7 @@ export default function Home() {
           auth.loginContext( res.data.user, auth.authToken);
           setShowRolePopup(false);
           toast.success(res.data.message);
+          navigate('/dashboard');
        }
 
       if(res.error){

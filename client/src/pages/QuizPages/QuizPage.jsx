@@ -8,10 +8,14 @@ import { API, handleApi } from '../../services/api.js';
 import { LoaderCircle, RouteOff } from "lucide-react";
 import { useSocket } from "../../services/socket.js";
 import StudentQuizResult from '../../components/StudentQuizResult.jsx';
+import { useAuth } from "../../context/AuthContext.jsx";
+import { useNavigate } from "react-router-dom";
 
 export default function QuizPage() {
   const { code } = useParams();
   const socket = useSocket();
+  const navigate = useNavigate();
+  const {isLoggedIn} = useAuth();
 
   const [quiz, setQuiz] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -41,6 +45,7 @@ export default function QuizPage() {
       const res = await handleApi(API.get(`/quiz/${code}`));
       if (res.error) {
         toast.error(res.error.message);
+        return isLoggedIn? navigate('/dashboard') : navigate("/");;
       } 
 
       if(res.status == 200){
@@ -49,10 +54,9 @@ export default function QuizPage() {
       setLoading(false);
     };
     fetchQuiz();
-  }, [code]);
+  }, [code, navigate,isLoggedIn]);
 
   useEffect(() => {
-
     if(finished) return;
 
     const saved = userAnswers[activeQuestion];
@@ -121,7 +125,7 @@ export default function QuizPage() {
   return (
 
   <> 
-    { finished && <StudentQuizResult userAnswers={userAnswers} questions={quiz?.questions} /> }
+    { finished && <StudentQuizResult userAnswers={userAnswers} questions={quiz?.questions} isLoggedIn={isLoggedIn} /> }
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-purple-100 to-blue-100">
       <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-2xl">
         {loading ? (

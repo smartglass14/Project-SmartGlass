@@ -1,5 +1,6 @@
 import Session from "../models/Session.js"
 import Quiz from "../models/Quiz.js"
+import Poll from "../models/Poll.js";
 
 export const updateAnswer = async (data, socket) => {
   const { roomId: code, answer } = data;
@@ -60,3 +61,45 @@ export const updateAnswer = async (data, socket) => {
     });
   }
 };
+
+
+export const submitVote = async(data, socket)=> {
+  try {
+    const {roomId:code, payload} = data;
+
+    if (!code || !payload || !payload.pollId || !payload.selectedOption) {
+      return socket.emit("error", {
+        type: "data-error",
+        msg: "Incomplete data, selecting an option required",
+      });
+    }
+
+    const poll = await Poll.findOneAndUpdate(
+      {
+        _id: payload.pollId,
+        "options._id": payload.selectedOption,
+      },
+      {
+        $inc: { "options.$.votes": 1 },
+      },
+      { new: true }
+    )
+
+    if (!poll) {
+      return socket.emit("error", {
+        type: "update-error",
+        msg: "Failed to update vote. Question or option not found.",
+      });
+    }
+
+    const updatedOption = poll.options.find(
+      (opt) => opt._id.toString() === payload.selectedOption
+    );
+    if (updatedOption) {
+      socket.to(code).emit("poll-update", updatedOption); 
+    }
+    
+  } catch (err) {
+    console.log("Vote-submit-error:", err.message);
+  }
+}
