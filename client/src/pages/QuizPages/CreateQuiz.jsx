@@ -4,7 +4,7 @@ import { X } from "lucide-react";
 import { toast } from 'react-hot-toast'
 import {API, handleApi} from "../../services/api"
 import { useAuth } from '../../context/AuthContext';
-import SessionCreationPopup from "../../components/sessionCreationPopup";
+import SessionCreationPopup from "../../components/SessionCreationPopup";
 import "swiper/css";
 
 export default function CreateQuiz() {
