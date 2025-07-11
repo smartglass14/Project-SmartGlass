@@ -3,7 +3,7 @@ import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { handleApi, API } from "../../services/api";
 import { useAuth } from "../../context/AuthContext"
-import SessionCreationPopup from "../../components/sessionCreationPopup";
+import SessionCreationPopup from "../../components/SessionCreationPopup";
 import { X } from 'lucide-react'
 
 export default function CreatePoll() {
