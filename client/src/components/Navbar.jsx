@@ -72,7 +72,7 @@ export default function Navbar() {
                   Upload
                 </span>
               </Link>
-              <Link to="/chatbot" className={linkClass("/chatbot")}>
+              <Link to="/chat" className={linkClass("/chatbot")}>
                 <span className="flex items-center gap-2">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path

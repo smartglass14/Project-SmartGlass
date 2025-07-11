@@ -9,47 +9,42 @@ import {
   ResponsiveContainer
 } from "recharts";
 
-export default function QuizResult({ data, questions }) {
-  const score = data.reduce((acc, ans) => {
-    const correct =
-      ans.type === "text"
-        ? ans.answerGiven?.toLowerCase().includes(ans.answer.toLowerCase())
-        : ans.answerGiven === ans.answer;
-    return acc + (correct ? 1 : 0);
+export default function QuizResult({ answers, quiz }) {
+  const score = answers.reduce((acc, ans) => {
+    return acc + (ans.selectedOption === ans.correctOption ? 1 : 0);
   }, 0);
 
-  const answerDistributions = questions
-    .filter(q => q.type === "mcq")
-    .map((q) => {
-      const dist = {};
-      q.options.forEach(opt => {
-        dist[opt] = data.filter(ans => ans.id === q.id && ans.answerGiven === opt).length;
-      });
-      return {
-        id: q.id,
-        question: q.question,
-        data: q.options.map(opt => ({ option: opt, count: dist[opt] })),
-      };
+  const answerDistributions = quiz.questions.map((q) => {
+    const dist = {};
+    q.options.forEach((opt) => {
+      dist[opt._id] = answers.filter(
+        (ans) => ans.questionId === q._id && ans.selectedOption === opt._id
+      ).length;
     });
 
-  const scoreTimeData = data.map((q, i) => ({
-    question: `Q${i + 1}`,
-    time: q.timeTaken,
-    correct:
-      q.type === "text"
-        ? q.answerGiven?.toLowerCase().includes(q.answer.toLowerCase())
-        : q.answerGiven === q.answer
-        ? 1
-        : 0,
+    return {
+      id: q._id,
+      question: q.question,
+      data: q.options.map((opt) => ({
+        option: opt.text,
+        count: dist[opt._id] || 0,
+      })),
+    };
+  });
+
+  const scoreTimeData = answers.map((ans, idx) => ({
+    question: `Q${idx + 1}`,
+    correct: ans.selectedOption === ans.correctOption ? 1 : 0,
+    time: ans.timeTaken || 30, // default if not tracked
   }));
 
   return (
     <div className="min-h-screen p-6 bg-gray-50">
       <div className="max-w-4xl mx-auto bg-white p-6 rounded shadow">
         <h2 className="text-2xl font-bold text-green-600 mb-4">🎉 Quiz Completed</h2>
-        <p className="text-lg mb-6">Your Score: {score} / {data.length}</p>
+        <p className="text-lg mb-6">Your Score: {score} / {quiz.questions.length}</p>
 
-        {/* Answer Distribution for Each Question */}
+        {/* Per-question Vote Distribution */}
         {answerDistributions.map((dist) => (
           <div key={dist.id} className="mb-10">
             <h4 className="font-semibold mb-2">{dist.question}</h4>
@@ -60,7 +55,7 @@ export default function QuizResult({ data, questions }) {
                 <YAxis allowDecimals={false} />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="count" fill="#8B5CF6" />
+                <Bar dataKey="count" fill="#8B5CF6" name="Votes" />
               </BarChart>
             </ResponsiveContainer>
           </div>
