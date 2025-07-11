@@ -4,7 +4,7 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import { createServer } from "http";
 import socketSetup from "./socket/socket.js";
-import authRoutes from "./Routes/auth.routes.js";
+import authRoutes from "./routes/auth.routes.js";
 import sessionRoutes from "./routes/session.routes.js";
 import uploadRoutes from "./routes/upload.routes.js";
 import chatRoutes from "./routes/chat.routes.js";
