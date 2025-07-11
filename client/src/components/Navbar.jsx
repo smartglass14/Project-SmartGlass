@@ -219,7 +219,7 @@ export default function Navbar() {
                 >
                   Login
                 </Link>) :
-                (<button>
+                (<button
                   className="block w-full px-4 py-3 bg-blue-600 text-white text-center rounded-lg font-semibold hover:bg-blue-700 transition-colors duration-200"
                   onClick={handleLogout}
                 >
