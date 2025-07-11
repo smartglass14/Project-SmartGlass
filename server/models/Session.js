@@ -1,11 +1,7 @@
 import { Schema, model } from "mongoose";
 
 const sessionSchema = new Schema({
-  name: {
-    type: String,
-    required: true
-  },
-  accessCode: {
+  sessionCode: {
     type: String,
     required: true,
     unique: true
@@ -15,9 +11,18 @@ const sessionSchema = new Schema({
     ref: "User",
     required: true
   },
+  sessionType: {
+    type: String,
+    enum: ['Quiz','Poll'],
+    required: true
+  },
   createdAt: {
     type: Date,
     default: Date.now
+  },
+  expiresAt: {
+    type: Date,
+    default: ()=> Date.now() + ( 2 * 24 * 60 * 60 * 1000 )  //2 days
   }
 });
 

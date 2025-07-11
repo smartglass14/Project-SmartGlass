@@ -1,13 +1,15 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import RolePopup from "../../components/RolePopup";
 import { useAuth } from "../../context/AuthContext";
 import { useState } from "react";
 import {API, handleApi} from "../../services/api";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 export default function Home() {
   const auth = useAuth();
+  const navigate = useNavigate();
   const [showRolePopup, setShowRolePopup] = useState(false);
 
   useEffect(()=> {
@@ -29,6 +31,7 @@ export default function Home() {
           auth.loginContext( res.data.user, auth.authToken);
           setShowRolePopup(false);
           toast.success(res.data.message);
+          navigate('/dashboard');
        }
 
       if(res.error){
@@ -95,7 +98,7 @@ export default function Home() {
           </div>
                     <div className="p-6 bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-2xl shadow-md hover:shadow-lg transition duration-200">
             <h2 className="text-xl font-semibold text-indigo-700 mb-2">
-              📝 Take a Quiz
+              📝 General Knowledge Quiz
             </h2>
             <p className="text-gray-700 text-sm">
               Test your knowledge with our interactive quizzes. Learn and have fun at the same time!

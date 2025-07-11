@@ -1,5 +1,6 @@
 import { Server } from "socket.io";
 import socketAuth from "../middleware/socketAuth.js";
+import { updateAnswer, submitVote } from "./socketController.js";
 
 export default (server) => {
   const io = new Server(server, {
@@ -14,15 +15,19 @@ export default (server) => {
   io.on("connection", (socket) => {
     console.log("User connected:", socket.id);
 
-    socket.on('join-room', (roomId) => socket.join(roomId));
+    socket.on('join-room', (roomId) => {
+      socket.join(roomId);
+      socket.emit("success", {msg: "Session Joined", status: "success"});
+    }
+  );
 
-    socket.on('start-quiz', ({ roomId, question }) => {
-      io.to(roomId).emit('quiz-question', question);
+    socket.on('submit-answer', async({ data }) => {
+        updateAnswer(data, socket);
     });
 
-    socket.on('submit-answer', ({ roomId, answer, student }) => {
-      io.to(roomId).emit('receive-answer', { student, answer });
-    });
+    socket.on('submit-vote', async(data)=> {
+       submitVote(data, socket);
+    })
 
     socket.on("send-message", ({ room, message }) => {
       io.to(room).emit("receive-message", message);

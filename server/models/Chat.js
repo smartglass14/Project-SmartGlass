@@ -1,4 +1,4 @@
-import mongoose, { Schema, model } from "mongoose";
+import { Schema, model } from "mongoose";
 
 const messageSchema = new Schema({
   role: {
@@ -18,6 +18,6 @@ const chatSchema = new Schema({
   messages: [messageSchema]
 });
 
-const Chat = mongoose.model('Chat', chatSchema);
+const Chat = model('Chat', chatSchema);
 
 export default Chat;
