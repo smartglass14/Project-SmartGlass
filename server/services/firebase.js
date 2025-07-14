@@ -1,18 +1,13 @@
 import admin from "firebase-admin";
+import fs from "fs";
 
-let serviceAccount;
+const serviceAccount = JSON.parse(
+  fs.readFileSync(new URL("../firebase-service-account.json", import.meta.url))
+);
 
-try {
-  serviceAccount = JSON.parse(process.env.FIREBASE_CONFIG);
-
-  if (!admin.apps.length) {
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
-    });
-  }
-} catch (error) {
-  console.error("Failed to initialize Firebase Admin SDK:", error);
-}
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
 
 const adminAuth = admin.auth();
 export { adminAuth };
