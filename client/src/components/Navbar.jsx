@@ -210,13 +210,22 @@ export default function Navbar() {
               </Link>
               )}
               <div className="pt-2 border-t border-gray-200">
-                <Link
+
+                {!auth.isLoggedIn ?
+                (<Link
                   to="/login"
                   className="block w-full px-4 py-3 bg-blue-600 text-white text-center rounded-lg font-semibold hover:bg-blue-700 transition-colors duration-200"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   Login
-                </Link>
+                </Link>) :
+                (<button
+                  className="block w-full px-4 py-3 bg-blue-600 text-white text-center rounded-lg font-semibold hover:bg-blue-700 transition-colors duration-200"
+                  onClick={handleLogout}
+                >
+                  Logout
+                </button>)
+                } 
               </div>
             </div>
           </div>

@@ -4,7 +4,7 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import { createServer } from "http";
 import socketSetup from "./socket/socket.js";
-import authRoutes from "./Routes/auth.routes.js";
+import authRoutes from "./routes/auth.routes.js";
 import sessionRoutes from "./routes/session.routes.js";
 import uploadRoutes from "./routes/upload.routes.js";
 import chatRoutes from "./routes/chat.routes.js";
@@ -17,7 +17,7 @@ const app = express();
 const server = createServer(app);
 
 app.use(cors({
-  origin: process.env.CLIENT_URL || "http://localhost:5173",
+  origin: [`${process.env.CLIENT_URL}`,"http://localhost:5173"],
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
