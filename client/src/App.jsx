@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
-import Home from "./pages/LandingPage/Home";
+import LandingPage from "./pages/LandingPage/LandingPage.jsx";
 import Upload from "./pages/UploadPage/Upload";
 import ChatbotPage from "./pages/ChatbotPage";
 import Login from "./pages/AuthPages/Login";
@@ -37,7 +37,7 @@ export default function App() {
       <Router>
         <Layout>
           <Routes>
-            <Route path="/" element={<Home />} />
+            <Route path="/" element={<LandingPage />} />
             <Route path="/upload" element={<Upload />} />
             <Route path="/chat" element={<ChatbotPage />} />
             <Route path="/chat/:id" element={<ChatbotPage />} />
