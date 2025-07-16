@@ -17,6 +17,7 @@ import CreatePoll from "./pages/PollPage/CreatePoll.jsx";
 import PollPage from "./pages/PollPage/PollPage.jsx";
 import PollResult from "./pages/PollPage/PollResult.jsx";
 import Dashboard from "./pages/Dashboard.jsx"
+import Leaderboard from "./pages/QuizPages/Leaderboard.jsx";
 
 function Layout({ children }) {
   const location = useLocation();
@@ -50,6 +51,7 @@ export default function App() {
             <Route path="/results/quiz/:code" element={ <QuizResult /> } />
             <Route path="/poll/:code" element={ <PollPage /> } />
             <Route path="/results/poll/:code" element={ <PollResult /> } />
+            <Route path="/leaderboard/:code" element={<Leaderboard />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="*" element={<NotFound />} />
 

@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 
-export default function StudentQuizResult({ userAnswers, questions, isLoggedIn=false }) {
+export default function StudentQuizResult({ userAnswers, questions, isLoggedIn=false, code }) {
 
     if (!userAnswers || !questions) return null;
   
@@ -18,10 +18,16 @@ export default function StudentQuizResult({ userAnswers, questions, isLoggedIn=f
           <p className="text-xl font-medium text-gray-700">
             You scored <span className="text-purple-600 font-bold">{score}</span> out of <span className="font-bold">{totalQuestions}</span>
           </p>
-            <div className="mt-5">
+            <div className="mt-5 flex flex-col gap-3 items-center">
               {!isLoggedIn &&  <p className="text-lg font-semi-bold mb-3"> To access more features </p> }
               {isLoggedIn? 
-                <Link to="/dashboard" className="bg-blue-600 hover:bg-blue-500 text-white py-2 px-3 rounded-lg font-semibold" > Dashboard </Link> :
+                <>
+                  <Link to="/dashboard" className="bg-blue-600 hover:bg-blue-500 text-white py-2 px-3 rounded-lg font-semibold" > Dashboard </Link>
+                  {code && (
+                    <Link to={`/leaderboard/${code}`} className="bg-yellow-500 hover:bg-yellow-400 text-white py-2 px-3 rounded-lg font-semibold mt-2">View Leaderboard</Link>
+                  )}
+                </>
+                :
                 <Link to="/login" className="bg-blue-600 hover:bg-blue-500 text-white py-2 px-3 rounded-lg font-semibold" > Login </Link>
               }
             </div>
