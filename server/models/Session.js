@@ -13,7 +13,7 @@ const sessionSchema = new Schema({
   },
   sessionType: {
     type: String,
-    enum: ['Quiz','Poll'],
+    enum: ['Quiz','Poll', 'QnA'],
     required: true
   },
   createdAt: {

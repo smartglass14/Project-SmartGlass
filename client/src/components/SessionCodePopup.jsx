@@ -28,14 +28,18 @@ export default function SessionCodePopup({ onClose, role }) {
        if(role == 'Student'){
             if(type == 'Quiz'){
                 navigate(`/quiz/${sessionCode}`);
-            }else{
+            }else if(type == "Poll") {
                 navigate(`/poll/${sessionCode}`) 
+            }else{
+              navigate(`/join-qna/${sessionCode}`)
             }
        }else{
             if(type == 'Quiz'){
                 navigate(`/results/quiz/${sessionCode}`);
-            }else{
+            }else if(type == "Poll"){
                 navigate(`/results/poll/${sessionCode}`) 
+            }else{
+              navigate(`/live-qna/${sessionCode}`)
             }
        }
     }

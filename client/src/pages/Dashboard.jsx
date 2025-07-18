@@ -59,16 +59,17 @@ export default function Dashboard() {
                   description="Design quizzes for students and evaluate results."
                   href={'/create/quiz'}
                 />
+                  <SectionCard
+                    title="Host Live QnA"
+                    icon="📢"
+                    description="Create and launch a real-time QnA session for your students."
+                    href="/create/live-qna"
+                  />
                 <SectionCard
                   title="Session Analytics"
                   icon="⏱"
                   description="Insights on student activity and sessions."
                   onClick={()=> setShowPopup(true)}
-                />
-                <SectionCard
-                  title="History"
-                  icon="📜"
-                  description="Review past session details."
                 />
               </>
             ) : (
@@ -91,16 +92,6 @@ export default function Dashboard() {
                   icon="🤖"
                   description="Ask questions and get instant AI support."
                   href={"/chat"}
-                />
-                <SectionCard
-                  title="My Progress"
-                  icon="📊"
-                  description="View your quiz scores, session attendance, and learning growth over time."
-                />
-                <SectionCard
-                  title="Learning Resources"
-                  icon="📚"
-                  description="Explore curated tutorials, notes, and extra material shared by educators."
                 />
                 
               </>

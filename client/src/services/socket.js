@@ -1,10 +1,9 @@
 import { useEffect, useRef } from "react";
 import { io } from "socket.io-client";
 import { toast } from "react-hot-toast";
-import { useAuth } from "../context/AuthContext"; 
 
 export const useSocket = () => {
-  const { authToken } = useAuth();
+  const authToken = localStorage.getItem("authToken");
   const socketRef = useRef(null);
 
   useEffect(() => {
@@ -14,6 +13,7 @@ export const useSocket = () => {
       auth: { token: authToken },
       transports: ["websocket"],
       withCredentials: true,
+      autoConnect: true
     });
 
     socket.on("success", ({ msg, status }) => {
