@@ -7,7 +7,7 @@ export default function socketAuth (socket, next) {
     }   
     try{
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        socket.user = decoded.user;
+        socket.userId = decoded.id;
         next();
     }catch(err){
         return next(new Error("Unauthorized!"));

@@ -20,6 +20,9 @@ import SummaryPage from "./pages/SummaryPage.jsx";
 import ChatListPage from "./pages/ChatPages/ChatListPage";
 import ChatSessionPage from "./pages/ChatPages/ChatSessionPage.jsx";
 import Leaderboard from "./pages/QuizPages/Leaderboard.jsx";
+import LiveQnAHost from "./pages/Live-QnA/LiveQnAHost.jsx";
+import LiveQnAStudent from "./pages/Live-QnA/LiveQnAStudent.jsx";
+import  CreateLiveQnA from "./pages/Live-QnA/CreateLiveQnA.jsx";
 
 function Layout({ children }) {
   const location = useLocation();
@@ -50,11 +53,14 @@ export default function App() {
             <Route path="/signup" element={<Signup />} />
             <Route path="/create/quiz" element={ <CreateQuiz /> } />
             <Route path="/create/poll" element={ <CreatePoll /> } />
+            <Route path="/create/live-qna" element={ <CreateLiveQnA /> } />
             <Route path="/quiz/:code" element={<QuizPage />} />
             <Route path="/results/quiz/:code" element={ <QuizResult /> } />
             <Route path="/poll/:code" element={ <PollPage /> } />
             <Route path="/results/poll/:code" element={ <PollResult /> } />
             <Route path="/leaderboard/:code" element={<Leaderboard />} />
+            <Route path="/live-qna/:sessionCode" element={<LiveQnAHost />} />
+            <Route path="/join-qna/:sessionCode" element={<LiveQnAStudent />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

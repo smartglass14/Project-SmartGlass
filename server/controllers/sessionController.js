@@ -1,6 +1,7 @@
 import Session from "../models/Session.js";
 import { customAlphabet } from "nanoid";
 
+
 function generateAccessCode() {
     const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     const nanoid = customAlphabet(alphabet, 6);
@@ -49,3 +50,4 @@ export const createSession = async (req, res) => {
       res.status(500).json({message: "Something went wrong while fetching session"});
     }
   }
+

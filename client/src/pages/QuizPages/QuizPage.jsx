@@ -104,19 +104,31 @@ export default function QuizPage() {
       selectedOption: answer,
       correctOption: currentQuestion.options[currentQuestion?.correctOption]._id
     };
-    localStorage.setItem("activeQue", activeQuestion+1)
-    setUserAnswers(updated);
 
     // Track time spent on this question
     const questionTime = 30 - seconds; // Time spent = total time - remaining time
     const updatedTimeSpent = [...timeSpentPerQuestion];
     updatedTimeSpent[activeQuestion] = questionTime;
+
+    // Save progress to localStorage
+    localStorage.setItem(
+      `quiz-progress-${code}`,
+      JSON.stringify({
+        userAnswers: updated,
+        activeQuestion,
+        timeSpentPerQuestion: updatedTimeSpent,
+        startTime
+      })
+    );
+    localStorage.setItem("activeQue", activeQuestion + 1);
+
+    setUserAnswers(updated);
     setTimeSpentPerQuestion(updatedTimeSpent);
 
-    try{ 
-      let data = {roomId: code, answer: updated[activeQuestion]}
-      socket.emit('submit-answer', { data })
-    }catch(err){
+    try {
+      let data = { roomId: code, answer: updated[activeQuestion] };
+      socket.emit("submit-answer", { data });
+    } catch (err) {
       console.log(err);
     }
   };
@@ -164,6 +176,7 @@ export default function QuizPage() {
       endTime={endTime}
       timeSpentPerQuestion={timeSpentPerQuestion}
     /> }
+    
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-purple-100 to-blue-100">
       <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-2xl">
         {loading ? (

@@ -37,11 +37,13 @@ export default function StudentQuizResult({ userAnswers, questions, isLoggedIn=f
           if (res.error) {
             toast.error(res.error.message || "Failed to submit results");
             if (res.error.message === "Quiz already submitted") {
+              localStorage.removeItem(`quiz-progress-${code}`);
               navigate(`/leaderboard/${code}`);
             }
           } else {
             setSubmitted(true);
             toast.success("Results submitted successfully!");
+            localStorage.removeItem(`quiz-progress-${code}`);
             navigate(`/leaderboard/${code}`);
           }
         } catch (error) {

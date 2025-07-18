@@ -17,6 +17,8 @@ export default function SessionCreationPopup({ sessionCode, onClose, type }) {
         navigate(`/results/quiz/${sessionCode}`)
       }else if(type == "poll"){
         navigate(`/results/poll/${sessionCode}`)
+      }else if (type == 'QnA'){
+        navigate(`/live-qna/${sessionCode}`)
       }
 
       onClose && onClose();
