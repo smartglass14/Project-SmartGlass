@@ -11,6 +11,7 @@ import chatRoutes from "./routes/chat.routes.js";
 import quizRoutes from "./routes/quiz.routes.js"
 import pollRoutes from "./routes/poll.routes.js"
 import summaryRoutes from "./routes/summary.routes.js"
+import leaderboardRoutes from "./routes/leaderboard.routes.js"
 
 dotenv.config();
 
@@ -36,6 +37,7 @@ app.use("/api/poll", pollRoutes)
 app.use("/api/quiz", quizRoutes)
 app.use("/api/session", sessionRoutes);
 app.use("/api/summary", summaryRoutes)
+app.use("/api/leaderboard", leaderboardRoutes)
 
 socketSetup(server);
 

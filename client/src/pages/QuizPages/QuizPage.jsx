@@ -3,9 +3,9 @@ import { useState, useEffect } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { useTimer } from "react-timer-hook";
 import { toast } from 'react-hot-toast';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { API, handleApi } from '../../services/api.js';
-import { LoaderCircle, RouteOff } from "lucide-react";
+import { LoaderCircle } from "lucide-react";
 import { useSocket } from "../../services/socket.js";
 import StudentQuizResult from '../../components/StudentQuizResult.jsx';
 import { useAuth } from "../../context/AuthContext.jsx";
@@ -24,6 +24,10 @@ export default function QuizPage() {
   const [selectedOption, setSelectedOption] = useState(null);
   const [swiper, setSwiper] = useState(null);
   const [finished, setFinished] = useState(false);
+  const [startTime, setStartTime] = useState(null);
+  const [endTime, setEndTime] = useState(null);
+  const [timeSpentPerQuestion, setTimeSpentPerQuestion] = useState([]);
+  const [expired, setExpired] = useState(false);
 
   const totalQuestions = quiz?.questions?.length;
   const currentQuestion = quiz?.questions?.[activeQuestion];
@@ -44,12 +48,18 @@ export default function QuizPage() {
       setLoading(true);
       const res = await handleApi(API.get(`/quiz/${code}`));
       if (res.error) {
+        if (res.error.message && res.error.message.toLowerCase().includes("expired")) {
+          setExpired(true);
+          setLoading(false);
+          return;
+        }
         toast.error(res.error.message);
-        return isLoggedIn? navigate('/dashboard') : navigate("/");;
+        return isLoggedIn? navigate('/dashboard') : navigate("/");
       } 
 
       if(res.status == 200){
         setQuiz(res.data.quiz);
+        setStartTime(new Date());
       }
       setLoading(false);
     };
@@ -97,6 +107,12 @@ export default function QuizPage() {
     localStorage.setItem("activeQue", activeQuestion+1)
     setUserAnswers(updated);
 
+    // Track time spent on this question
+    const questionTime = 30 - seconds; // Time spent = total time - remaining time
+    const updatedTimeSpent = [...timeSpentPerQuestion];
+    updatedTimeSpent[activeQuestion] = questionTime;
+    setTimeSpentPerQuestion(updatedTimeSpent);
+
     try{ 
       let data = {roomId: code, answer: updated[activeQuestion]}
       socket.emit('submit-answer', { data })
@@ -116,16 +132,38 @@ export default function QuizPage() {
       swiper?.slideNext();
     } else {
       setFinished(true);
+      setEndTime(new Date());
       pause();
       localStorage.removeItem("activeQue");
     }
   };
 
+  if (expired) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-100 to-blue-100">
+        <div className="bg-white rounded-xl shadow-lg p-8 max-w-md w-full text-center">
+          <h2 className="text-2xl font-bold text-red-600 mb-4">You are late!</h2>
+          <p className="mb-6 text-gray-700">Quiz expired. You can see the leaderboard.</p>
+          <Link to={`/leaderboard/${code}`} className="bg-yellow-500 hover:bg-yellow-400 text-white py-2 px-4 rounded-lg font-semibold">
+            View Leaderboard
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
 
   <> 
-    { finished && <StudentQuizResult userAnswers={userAnswers} questions={quiz?.questions} isLoggedIn={isLoggedIn} /> }
+    { finished && <StudentQuizResult 
+      userAnswers={userAnswers} 
+      questions={quiz?.questions} 
+      isLoggedIn={isLoggedIn} 
+      code={code}
+      startTime={startTime}
+      endTime={endTime}
+      timeSpentPerQuestion={timeSpentPerQuestion}
+    /> }
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-purple-100 to-blue-100">
       <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-2xl">
         {loading ? (
