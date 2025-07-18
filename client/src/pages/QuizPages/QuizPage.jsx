@@ -125,7 +125,7 @@ export default function QuizPage() {
   return (
 
   <> 
-    { finished && <StudentQuizResult userAnswers={userAnswers} questions={quiz?.questions} isLoggedIn={isLoggedIn} /> }
+    { finished && <StudentQuizResult userAnswers={userAnswers} questions={quiz?.questions} isLoggedIn={isLoggedIn} code={code} /> }
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-purple-100 to-blue-100">
       <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-2xl">
         {loading ? (

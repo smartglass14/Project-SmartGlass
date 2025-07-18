@@ -19,6 +19,8 @@ import Dashboard from "./pages/Dashboard.jsx"
 import SummaryPage from "./pages/SummaryPage.jsx";
 import ChatListPage from "./pages/ChatPages/ChatListPage";
 import ChatSessionPage from "./pages/ChatPages/ChatSessionPage.jsx";
+import Leaderboard from "./pages/QuizPages/Leaderboard.jsx";
+
 
 function Layout({ children }) {
   const location = useLocation();
@@ -53,6 +55,7 @@ export default function App() {
             <Route path="/results/quiz/:code" element={ <QuizResult /> } />
             <Route path="/poll/:code" element={ <PollPage /> } />
             <Route path="/results/poll/:code" element={ <PollResult /> } />
+            <Route path="/leaderboard/:code" element={<Leaderboard />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="*" element={<NotFound />} />
 
