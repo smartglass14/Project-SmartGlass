@@ -6,10 +6,11 @@ import { createServer } from "http";
 import socketSetup from "./socket/socket.js";
 import authRoutes from "./routes/auth.routes.js";
 import sessionRoutes from "./routes/session.routes.js";
-import uploadRoutes from "./routes/upload.routes.js";
+import DocumentRoutes from "./routes/documents.routes.js";
 import chatRoutes from "./routes/chat.routes.js";
 import quizRoutes from "./routes/quiz.routes.js"
 import pollRoutes from "./routes/poll.routes.js"
+import summaryRoutes from "./routes/summary.routes.js"
 
 dotenv.config();
 
@@ -29,11 +30,12 @@ app.use(express.urlencoded({ extended: true }));
 app.get("/", (req, res) => res.send("Server is running! :)"));
 
 app.use("/api/auth", authRoutes);
-app.use("/api/session", sessionRoutes);
-app.use("/api/upload", uploadRoutes);
 app.use("/api/chat", chatRoutes)
-app.use("/api/quiz", quizRoutes)
+app.use("/api/docs", DocumentRoutes);
 app.use("/api/poll", pollRoutes)
+app.use("/api/quiz", quizRoutes)
+app.use("/api/session", sessionRoutes);
+app.use("/api/summary", summaryRoutes)
 
 socketSetup(server);
 
