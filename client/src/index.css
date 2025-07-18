@@ -1,0 +1,15 @@
+@import "tailwindcss";
+
+
+.logo-font {
+  font-family: 'comfortaa', sans-serif;
+}
+
+button:hover{
+  cursor: pointer;
+}
+
+
+input[type='radio']:hover{
+  cursor: pointer;
+}
