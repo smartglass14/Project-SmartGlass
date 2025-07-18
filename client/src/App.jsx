@@ -3,7 +3,6 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import LandingPage from "./pages/LandingPage/LandingPage.jsx";
 import Upload from "./pages/UploadPage/Upload";
-import ChatbotPage from "./pages/ChatbotPage";
 import Login from "./pages/AuthPages/Login";
 import Signup from "./pages/AuthPages/Signup";
 import ResetPassword from "./pages/AuthPages/ResetPassword";
@@ -17,6 +16,9 @@ import CreatePoll from "./pages/PollPage/CreatePoll.jsx";
 import PollPage from "./pages/PollPage/PollPage.jsx";
 import PollResult from "./pages/PollPage/PollResult.jsx";
 import Dashboard from "./pages/Dashboard.jsx"
+import SummaryPage from "./pages/SummaryPage.jsx";
+import ChatListPage from "./pages/ChatPages/ChatListPage";
+import ChatSessionPage from "./pages/ChatPages/ChatSessionPage.jsx";
 
 function Layout({ children }) {
   const location = useLocation();
@@ -39,8 +41,9 @@ export default function App() {
           <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/upload" element={<Upload />} />
-            <Route path="/chat" element={<ChatbotPage />} />
-            <Route path="/chat/:id" element={<ChatbotPage />} />
+            <Route path="/Summary" element={<SummaryPage />} />
+            <Route path="/chat" element={<ChatListPage />} />
+            <Route path="/chat/:id" element={<ChatSessionPage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/signup" element={<Signup />} />

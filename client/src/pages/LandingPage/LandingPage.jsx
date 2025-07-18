@@ -21,7 +21,7 @@ export default function LandingPage () {
     if (auth.user && !auth.user.role) {
       setShowRolePopup(true);
     }
-  },[auth.user])
+  },[auth.user, navigate])
 
   const saveRole = async (role) => {
     if (!role) return;

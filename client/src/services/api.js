@@ -4,6 +4,18 @@ export const API = axios.create({
   baseURL: import.meta.env.VITE_SERVER_URL,
 });
 
+export const ChatAPI = axios.create({
+  baseURL: import.meta.env.VITE_SERVER_URL + "/chat",
+});
+
+ChatAPI.interceptors.request.use((config) => {
+  const token = localStorage.getItem("authToken");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 export const handleApi = async (promise) => {
   try {
     const res = await promise;
