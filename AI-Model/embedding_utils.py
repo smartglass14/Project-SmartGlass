@@ -1,9 +1,12 @@
 from sentence_transformers import SentenceTransformer
 import requests
 from config import OPENROUTER_API_KEY
+from functools import lru_cache
 
-# Load local embedding model (only once)
-model = SentenceTransformer("all-MiniLM-L6-v2")
+@lru_cache(maxsize=1)
+def get_model():
+    from sentence_transformers import SentenceTransformer
+    return SentenceTransformer("all-MiniLM-L6-v2")
 
 # Headers for OpenRouter API
 headers = {
@@ -17,6 +20,7 @@ def get_embeddings(text):
     Input can be a string or a list of strings.
     Returns a list of vectors.
     """
+    model = get_model()
     if isinstance(text, str):
         text = [text]
     embeddings= model.encode(text, convert_to_numpy=True)
