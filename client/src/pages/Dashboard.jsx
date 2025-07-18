@@ -81,10 +81,10 @@ export default function Dashboard() {
                 />
 
                  <SectionCard
-                  title="Uploaded Documents"
+                  title="Generate Summary"
                   icon="📄"
-                  description="Access and manage your uploaded files securely."
-                  href={'/upload'}
+                  description="Generate meaningfull and easy to read summary from your documents"
+                  href={'/summary'}
                 />
                 <SectionCard
                   title="AI Chat Assistant"

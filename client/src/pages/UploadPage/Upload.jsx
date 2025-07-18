@@ -1,23 +1,30 @@
 import DocumentUpload from "../../components/DocumentUpload";
 import { DocumentArrowUpIcon, CloudArrowUpIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import { useAuth } from "../../context/AuthContext";
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "react-hot-toast";
 
 
 export default function Upload() {
   
   const auth = useAuth();
+  const location = useLocation();
   const navigate = useNavigate();
-  
+  const [redirectTo,setRedirectTo] = useState("/dashboard");
+
+  useEffect(() => {
+    if (location?.state?.from) {
+      setRedirectTo(location.state.from);
+    }
+  }, [location]);
+
   useEffect(()=> {
     if(!auth.loading && !auth.user && !auth.isLoggedIn) {
       navigate('/login');
       toast.error("You need to be sign in to uploading files.");
     }
   },[auth.user, auth.loading ,auth.isLoggedIn, navigate]);
-
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 relative overflow-hidden">
@@ -53,7 +60,7 @@ export default function Upload() {
 
           {/* Main Upload Card */}
           <div className="bg-white/80 backdrop-blur-xl shadow-2xl rounded-3xl p-8 sm:p-12 border border-white/20 hover:shadow-3xl transition-all duration-500 transform hover:-translate-y-1">
-            <DocumentUpload />
+            <DocumentUpload afterUpload={redirectTo} />
           </div>
 
           {/* Feature Cards */}
@@ -97,7 +104,6 @@ export default function Upload() {
             </div>
           </div>
 
-          {/* Progress Indicator */}
           <div className="mt-12 text-center">
             <div className="inline-flex items-center space-x-2 bg-white/60 backdrop-blur-lg rounded-full px-6 py-3 border border-white/30">
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>

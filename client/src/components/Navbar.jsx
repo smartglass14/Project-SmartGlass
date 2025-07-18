@@ -2,6 +2,8 @@ import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
 import {useAuth} from "../context/AuthContext";
 import toast from "react-hot-toast";
+import { LayoutDashboard } from 'lucide-react';
+
 
 export default function Navbar() {
   const location = useLocation();
@@ -59,7 +61,7 @@ export default function Navbar() {
                   Home
                 </span>
               </Link>
-              <Link to="/upload" className={linkClass("/upload")}>
+              {/* <Link to="/upload" className={linkClass("/upload")}>
                 <span className="flex items-center gap-2">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
@@ -71,7 +73,7 @@ export default function Navbar() {
                   </svg>
                   Upload
                 </span>
-              </Link>
+              </Link> */}
               <Link to="/chat" className={linkClass("/chatbot")}>
                 <span className="flex items-center gap-2">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -82,21 +84,13 @@ export default function Navbar() {
                       d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8-4.97 0-9-3.582-9-8s4.03-8 9-8 9 3.582 9 8z"
                     />
                   </svg>
-                  Chatbot
+                  Chat with PDF
                 </span>
               </Link>
               {auth?.user && (
               <Link to="/dashboard" className={linkClass("/dashboard")}>
                 <span className="flex items-center gap-2">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8-4.97 0-9-3.582-9-8s4.03-8 9-8 9 3.582 9 8z"
-                    />
-                  </svg>
-                 📊 Dashboard
+                  <LayoutDashboard size={'15px'}/> Dashboard
                 </span>
               </Link>
               )}
@@ -156,7 +150,7 @@ export default function Navbar() {
                   Home
                 </span>
               </Link>
-              <Link
+              {/* <Link
                 to="/upload"
                 className={mobileLinkClass("/upload")}
                 onClick={() => setIsMobileMenuOpen(false)}
@@ -172,7 +166,7 @@ export default function Navbar() {
                   </svg>
                   Upload
                 </span>
-              </Link>
+              </Link> */}
               <Link
                 to="/chat"
                 className={mobileLinkClass("/chatbot")}
@@ -187,7 +181,7 @@ export default function Navbar() {
                       d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8-4.97 0-9-3.582-9-8s4.03-8 9-8 9 3.582 9 8z"
                     />
                   </svg>
-                  Chatbot
+                  Chat With PDF
                 </span>
               </Link>
               {auth?.user && (
@@ -197,15 +191,7 @@ export default function Navbar() {
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 <span className="flex items-center gap-3">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                    />
-                  </svg>
-                 📊 Dashboard
+                 <LayoutDashboard size={"15px"}/> Dashboard
                 </span>
               </Link>
               )}

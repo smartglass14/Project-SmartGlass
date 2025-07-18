@@ -8,7 +8,8 @@ const storage = new CloudinaryStorage({
     folder: `SmartGlass/${req.userId || "anonymous"}`,
     resource_type: 'raw',
     allowed_formats: ['pdf', 'txt'],
-    public_id: `${Date.now()}_${file.originalname}`,
+     public_id: `${Date.now()}_${file.originalname.replace(/\.[^/.]+$/, "")}`,
+     format: 'pdf'
   }),
 });
 

@@ -2,10 +2,12 @@ import { useState } from "react";
 import { API, handleApi } from "../services/api";
 import { useAuth } from "./../context/AuthContext";
 import { toast } from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 import { LoaderCircle } from 'lucide-react'
 
-export default function DocumentUpload() {
+export default function DocumentUpload({afterUpload}) {
 
+  const navigate = useNavigate();
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
@@ -25,7 +27,7 @@ export default function DocumentUpload() {
 
     try{
 
-      let res = await handleApi(API.post("/upload", formData, {
+      let res = await handleApi(API.post("/docs/upload", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
           "Authorization": `Bearer ${auth.authToken}`,
@@ -35,7 +37,7 @@ export default function DocumentUpload() {
   
       if(res.status == 200) {
         toast.success(res.data.message);
-        console.log(res.data.filesData);
+        navigate(afterUpload);
       }
   
       if(res.error){
