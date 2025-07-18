@@ -165,7 +165,7 @@ export default function CreateQuiz() {
     <>
     {
         sessionCode && popUp &&
-        <SessionCreationPopup sessionCode={sessionCode} onClose={()=> setPopUp(false)}/>
+        <SessionCreationPopup sessionCode={sessionCode} onClose={()=> setPopUp(false)} type={"quiz"} />
     }
     <div className="max-w-3xl mx-auto p-6 mt-4">
       <h2 className="text-3xl font-bold mb-4 text-purple-700">🧠 Create Quiz</h2>

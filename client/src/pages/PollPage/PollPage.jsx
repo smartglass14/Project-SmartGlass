@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { handleApi, API } from "../../services/api";
+import { useParams, Link } from "react-router-dom";
+import { API, handleApi } from '../../services/api.js';
+import { LoaderCircle } from "lucide-react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
@@ -14,13 +15,20 @@ export default function PollPage() {
 
   const [poll, setPoll] = useState(null);
   const [selected, setSelected] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [expired, setExpired] = useState(false);
   const [hasVoted, setHasVoted] = useState(false);
 
   useEffect(() => {
     const fetchPoll = async () => {
+      setLoading(true);
       const res = await handleApi(API.get(`/poll/${code}`));
       if (res.error) {
+        if (res.error.message && res.error.message.toLowerCase().includes("expired")) {
+          setExpired(true);
+          setLoading(false);
+          return;
+        }
         toast.error(res.error.message);
         return isLoggedIn ? navigate("/dashboard") : navigate("/");
       }
@@ -33,6 +41,7 @@ export default function PollPage() {
           setExpired(true);
         }
       }
+      setLoading(false);
     };
   
     fetchPoll();
@@ -63,6 +72,29 @@ export default function PollPage() {
     setHasVoted(true)
 
   };
+
+  if (expired) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-100 to-blue-100">
+        <div className="bg-white rounded-xl shadow-lg p-8 max-w-md w-full text-center">
+          <h2 className="text-2xl font-bold text-red-600 mb-4">You are late!</h2>
+          <p className="mb-6 text-gray-700">Poll expired. You can see the result.</p>
+          <Link to={`/results/poll/${code}`} className="bg-yellow-500 hover:bg-yellow-400 text-white py-2 px-4 rounded-lg font-semibold">
+            View Result
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-100 to-blue-100">
+        <LoaderCircle className="animate-spin mx-2" size={35} />
+        Loading...
+      </div>
+    );
+  }
 
   if (!poll) return <div className="text-center mt-10">Loading poll...</div>;
   

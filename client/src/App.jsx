@@ -21,7 +21,6 @@ import ChatListPage from "./pages/ChatPages/ChatListPage";
 import ChatSessionPage from "./pages/ChatPages/ChatSessionPage.jsx";
 import Leaderboard from "./pages/QuizPages/Leaderboard.jsx";
 
-
 function Layout({ children }) {
   const location = useLocation();
   const hideLayout = location.pathname === "/chat" || location.pathname.startsWith("/chat/") || location.pathname.startsWith("/quiz/");
@@ -58,7 +57,6 @@ export default function App() {
             <Route path="/leaderboard/:code" element={<Leaderboard />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="*" element={<NotFound />} />
-
           </Routes>
         </Layout>
       </Router>

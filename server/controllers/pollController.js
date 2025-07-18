@@ -73,10 +73,6 @@ export const getPollResult = async (req, res) => {
             return res.status(400).json({message: "Invalid Session Code"});
         }
 
-        if(String(userId) !== String(session.educator._id)){
-            return res.status(402).json({message: "Unauthorized! only creater can access result"});
-        }
-
         const poll = await Poll.findOne({session: session._id}).populate({
             path: 'session',
             populate: { path: 'educator', model: 'User' }

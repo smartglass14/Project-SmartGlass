@@ -1,14 +1,24 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { X } from "lucide-react";
+import { Navigate, useNavigate } from "react-router-dom";
 
-export default function SessionCreationPopup({ sessionCode, onClose }) {
+
+export default function SessionCreationPopup({ sessionCode, onClose, type }) {
     const [copied, setCopied] = useState(false);
-  
+    const navigate = useNavigate();
+
     const handleCopy = () => {
       navigator.clipboard.writeText(sessionCode);
       setCopied(true);
       toast.success("Session code copied to clipboard!");
+
+      if(type == "quiz"){
+        navigate(`/results/quiz/${sessionCode}`)
+      }else if(type == "poll"){
+        navigate(`/results/poll/${sessionCode}`)
+      }
+
       onClose && onClose();
     };
   

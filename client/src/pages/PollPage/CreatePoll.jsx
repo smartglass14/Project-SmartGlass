@@ -81,7 +81,7 @@ export default function CreatePoll() {
 
   return (
     <>
-    { showPopup && <SessionCreationPopup onClose={()=> setShowPopup(false)} sessionCode={sessionCode}  /> }
+    { showPopup && <SessionCreationPopup onClose={()=> setShowPopup(false)} sessionCode={sessionCode} type={"poll"} /> }
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-100 via-purple-100 to-blue-100 px-4 py-8">
         <div className="w-full max-w-2xl bg-white p-8 rounded-2xl shadow-xl">
         <h1 className="text-3xl font-extrabold text-purple-700 mb-6 text-center"> Create a New Poll </h1>
