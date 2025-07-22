@@ -1,4 +1,4 @@
-import jwt from "jsonwebtoken";
+import jwt, { decode } from "jsonwebtoken";
 
 export default function jwtAuth (req, res, next) {
   const token = req.header("Authorization")?.replace("Bearer ", "");
@@ -8,6 +8,9 @@ export default function jwtAuth (req, res, next) {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.userId = decoded.id;
     req.role = decoded.role;
+    req.guestId = decoded.guestId;
+    req.guestName = decoded?.guestName;
+    req.isGuest = decoded?.guest;
     next();
   } catch (err) {
     console.log(err);

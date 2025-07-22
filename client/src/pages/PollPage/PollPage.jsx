@@ -69,8 +69,9 @@ export default function PollPage() {
     const payload = {pollId: poll._id, selectedOption: selected};
     socket.emit('submit-vote', ({roomId:code, payload}));
 
+    toast.success("vote submitted!")
     setHasVoted(true)
-
+    localStorage.setItem('isServiceUsed', true);
   };
 
   if (expired) {

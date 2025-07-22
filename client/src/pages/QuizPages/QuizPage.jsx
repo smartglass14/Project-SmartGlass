@@ -15,7 +15,7 @@ export default function QuizPage() {
   const { code } = useParams();
   const socket = useSocket();
   const navigate = useNavigate();
-  const {isLoggedIn} = useAuth();
+  const {isLoggedIn, guestUser} = useAuth();
 
   const [quiz, setQuiz] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -170,7 +170,7 @@ export default function QuizPage() {
     { finished && <StudentQuizResult 
       userAnswers={userAnswers} 
       questions={quiz?.questions} 
-      isLoggedIn={isLoggedIn} 
+      isLoggedIn={isLoggedIn? isLoggedIn : guestUser? true : false} 
       code={code}
       startTime={startTime}
       endTime={endTime}

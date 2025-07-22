@@ -4,13 +4,14 @@ import { toast } from "react-hot-toast";
 
 export const useSocket = () => {
   const authToken = localStorage.getItem("authToken");
+  const guestToken = JSON.parse(localStorage.getItem('guest'))?.token;
   const socketRef = useRef(null);
 
   useEffect(() => {
-    if (!authToken) return;
+    if (!authToken && !guestToken) return;
 
     const socket = io(import.meta.env.VITE_SERVER_URL.replace("/api", ""), {
-      auth: { token: authToken },
+      auth: { token: authToken? authToken : guestToken!==undefined && guestToken },
       transports: ["websocket"],
       withCredentials: true,
       autoConnect: true
@@ -29,7 +30,7 @@ export const useSocket = () => {
     return () => {
       socket.disconnect();
     };
-  }, [authToken]);
+  }, [authToken, guestToken]);
 
   return socketRef.current;
 };

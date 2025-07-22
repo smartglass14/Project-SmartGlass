@@ -15,6 +15,7 @@ export default function StudentQuizResult({ userAnswers, questions, isLoggedIn=f
         setSubmitting(true);
         try {
           const filteredAnswers = userAnswers.filter((que => que.selectedOption !== "Skipped"));
+          console.log(filteredAnswers);
           const quizData = {
             sessionCode: code,
             answers: filteredAnswers.map((answer, index) => {
@@ -44,6 +45,7 @@ export default function StudentQuizResult({ userAnswers, questions, isLoggedIn=f
             setSubmitted(true);
             toast.success("Results submitted successfully!");
             localStorage.removeItem(`quiz-progress-${code}`);
+            localStorage.setItem("isServiceUsed", true);
             navigate(`/leaderboard/${code}`);
           }
         } catch (error) {

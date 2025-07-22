@@ -6,6 +6,7 @@ export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [guestUser, setGuestUser] = useState(null);
   const [authToken, setAuthToken] = useState(null); 
   const [loading, setLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -14,6 +15,11 @@ export const AuthProvider = ({ children }) => {
 
     const storedUser = localStorage.getItem("user");
     const storedToken = localStorage.getItem("authToken");
+    const storedGuest = JSON.parse(localStorage.getItem("guest"));
+
+    if(storedGuest && storedGuest !== undefined){
+      setGuestUser(storedGuest);
+    }
 
     if ((storedUser && storedToken) && (storedUser!=undefined && storedToken!==undefined)) {
       setUser(JSON.parse(storedUser));
@@ -32,6 +38,18 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem("authToken", token);
   };
 
+  const provideGuestAuth = (data)=> {
+    localStorage.setItem('guest', JSON.stringify(data));
+    localStorage.setItem('isServiceUsed', false);
+    setGuestUser(data);
+  }
+
+  const cleanUpGuest = ()=> {
+    setGuestUser(null);
+    localStorage.removeItem('guest');
+    localStorage.removeItem('isServiceUsed');
+  }
+
   const logOutUser = () => {
     localStorage.removeItem("user");
     localStorage.removeItem("authToken");
@@ -45,12 +63,14 @@ export const AuthProvider = ({ children }) => {
     <AuthContext.Provider
       value={{
         user,
+        guestUser,
         authToken,
         isLoggedIn,
         loading,
         loginContext,
         logOutUser,
-        setUser,
+        provideGuestAuth,
+        cleanUpGuest,
         setAuthToken,
       }}
     >

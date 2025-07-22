@@ -3,9 +3,10 @@ import { Schema, model } from 'mongoose';
 const studentAnalyticsSchema = new Schema({
   userId: {
     type: Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
+    ref: 'User'
   },
+  guestId :{ type: String },
+  guestName: { type: String },
   quizId: {
     type: Schema.Types.ObjectId,
     ref: 'Quiz',
@@ -103,7 +104,18 @@ const studentAnalyticsSchema = new Schema({
 });
 
 studentAnalyticsSchema.index({ sessionId: 1, rank: 1 });
-studentAnalyticsSchema.index({ userId: 1, sessionId: 1 }, { unique: true });
+studentAnalyticsSchema.index(
+  { sessionId: 1, userId: 1, guestId: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      $or: [
+        { userId: { $type: 'objectId' } },
+        { guestId: { $type: 'string' } }
+      ]
+    }
+  }
+);
 studentAnalyticsSchema.index({ sessionId: 1, finalRankScore: -1 });
 
 const StudentAnalytics = model('StudentAnalytics', studentAnalyticsSchema);

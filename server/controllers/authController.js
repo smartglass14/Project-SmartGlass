@@ -1,6 +1,7 @@
 import User from "../models/User.js"; 
 import { adminAuth } from "../services/firebase.js";
 import jwt from "jsonwebtoken";
+import { v4 as uuidv4 } from 'uuid';
 
 export const authenticate =  async (req, res) => {
   const { name, firebaseToken } = req.body;
@@ -52,3 +53,21 @@ export const addRole = async (req, res) => {
     res.status(500).json({ message: "Failed to update role" });
   }
 }
+
+
+export const guestAuth = (req, res) => {
+  const { name: guestName, sessionCode } = req.body;
+
+  if (!sessionCode) return res.status(400).json({ message: "Session code required" });
+
+  try{
+    const guestId = uuidv4();
+    const token = jwt.sign({ guest: true, guestId, guestName , sessionCode, role: 'Student' }, process.env.JWT_SECRET,{ expiresIn: "1h" });
+    
+    res.status(200).json({ token, guestId, guestName, role: 'Student' });
+
+  } catch(err){
+    console.log(err);
+    return res.status(500).json({message: "Error while authorizing guest user"})
+  }
+};
