@@ -12,6 +12,7 @@ export default function LiveQnAStudent() {
   const { sessionCode } = useParams();
   const navigate = useNavigate();
   const socket = useSocket();
+
   const [quiz, setQuiz] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeSlide, setActiveSlide] = useState(0);
@@ -116,11 +117,11 @@ export default function LiveQnAStudent() {
       };
       try {
         await submitQuizResult(payload);
+        localStorage.setItem('isServiceUsed', true)
+        navigate(`/leaderboard/${sessionCode}`);
       } catch (err) {
         console.log(err);
-        // Optionally handle error
       }
-      navigate(`/leaderboard/${sessionCode}`);
     };
 
     socket.on("sync-current-slide", handleSync);
@@ -252,11 +253,14 @@ export default function LiveQnAStudent() {
                       {confirmed ? "Answer Submitted" : "Confirm Answer"}
                     </button>
                     
-                    {confirmed && (
-                      <div className="text-green-600 font-semibold mt-4 text-center">
+                    {confirmed && !(activeSlide < quiz.questions.length - 1) ?
+                     (<div className="text-green-600 font-semibold mt-4 text-center">
                         ✓ Answer submitted! Waiting for next question...
-                      </div>
-                    )}
+                      </div>):
+                      (<div className="text-green-600 font-semibold mt-4 text-center">
+                        ✓ Answer submitted! Waiting for host to finish...
+                      </div>)
+                  }
                   </div>
                 </SwiperSlide>
               ))}

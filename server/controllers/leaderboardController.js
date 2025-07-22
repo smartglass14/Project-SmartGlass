@@ -1,7 +1,6 @@
 import StudentAnalytics from '../models/StudentAnalytics.js';
 import Session from '../models/Session.js';
 import Quiz from '../models/Quiz.js';
-import User from '../models/User.js';
 
 const calculateRankScore = (accuracy, timeTaken, avgTimeTaken, maxTimeTaken) => {
   // Normalize accuracy (0-100 to 0-1)
@@ -17,8 +16,8 @@ const calculateRankScore = (accuracy, timeTaken, avgTimeTaken, maxTimeTaken) => 
     normalizedTime = 0.5;
   }
   
-  // Weighted combination: 70% accuracy + 30% time efficiency
-  const finalScore = (normalizedAccuracy * 0.7) + (normalizedTime * 0.3);
+  // Weighted combination: 90% accuracy + 10% time efficiency
+  const finalScore = (normalizedAccuracy * 0.9) + (normalizedTime * 0.1);
   
   return {
     normalizedAccuracy,
@@ -35,41 +34,20 @@ const updateRankings = async (sessionId) => {
 
     if (analytics.length === 0) return [];
 
-    // statistics for normalization
-    const scores = analytics.map(a => a.score);
-    const times = analytics.map(a => a.timeTaken);
-    
-    const maxScore = Math.max(...scores);
-    const minScore = Math.min(...scores);
-    const avgTime = times.reduce((a, b) => a + b, 0) / times.length;
-    const maxTime = Math.max(...times);
-    const minTime = Math.min(...times);
-
     const updatedAnalytics = [];
-    
     for (let i = 0; i < analytics.length; i++) {
       const analytic = analytics[i];
-      
-      const rankFactors = calculateRankScore(
-        analytic.accuracy,
-        analytic.timeTaken,
-        avgTime,
-        maxTime
-      );
-
       analytic.rank = i + 1;
       analytic.rankFactors = {
-        scoreWeight: 0.7,
-        timeWeight: 0.3,
-        normalizedScore: rankFactors.normalizedAccuracy,
-        normalizedTime: rankFactors.normalizedTime,
-        finalRankScore: rankFactors.finalScore
+        scoreWeight: 1,
+        timeWeight: 0,
+        normalizedScore: analytic.score / 100,
+        normalizedTime: 0,
+        finalRankScore: analytic.score // Just use score for clarity
       };
-
       await analytic.save();
       updatedAnalytics.push(analytic);
     }
-
     return updatedAnalytics;
   } catch (error) {
     console.error('Error updating rankings:', error);
@@ -81,6 +59,9 @@ export const submitQuizResult = async (req, res) => {
   try {
     const { sessionCode, answers, startTime, endTime, timeSpentPerQuestion } = req.body;
     const userId = req.userId;
+    const guestId = req.guestId;
+    const isGuest = req.isGuest;
+    const guestName = req.guestName;
 
     if (!sessionCode || !answers || !startTime || !endTime) {
       return res.status(400).json({ message: "Missing required data" });
@@ -97,7 +78,7 @@ export const submitQuizResult = async (req, res) => {
     }
 
     const existingSubmission = await StudentAnalytics.findOne({
-      userId,
+      ...(isGuest ? { guestId } : { userId }),
       sessionId: session._id
     });
 
@@ -127,7 +108,9 @@ export const submitQuizResult = async (req, res) => {
     const accuracy = score;
 
     const analytics = new StudentAnalytics({
-      userId,
+      userId: isGuest ? undefined : userId,
+      guestId: isGuest ? guestId : undefined,
+      guestName: isGuest ? guestName : undefined,
       quizId: quiz._id,
       sessionId: session._id,
       score,
@@ -167,7 +150,8 @@ export const submitQuizResult = async (req, res) => {
 export const getLeaderboard = async (req, res) => {
   try {
     const { sessionCode } = req.params;
-    const userId = req.userId;
+    const userId = req.userId;      
+    const isGuest = req.isGuest;   
 
     if (!sessionCode) {
       return res.status(400).json({ message: "Session code required" });
@@ -179,33 +163,49 @@ export const getLeaderboard = async (req, res) => {
     }
 
     const leaderboard = await StudentAnalytics.find({ sessionId: session._id })
-      .populate('userId', 'name email')
-      .sort({ 'rankFactors.finalRankScore': -1, timeTaken: 1 })
+      .populate('userId', 'name email') 
+      .sort({ score: -1, timeTaken: 1 })
       .select('-answers');
 
     const userAnalytics = await StudentAnalytics.findOne({
-      userId,
+      ...(isGuest ? { guestId: userId } : { userId }),
       sessionId: session._id
     });
 
-    const leaderboardData = leaderboard.map((entry, index) => ({
-      rank: index + 1,
-      userId: entry.userId._id,
-      name: entry.userId.name,
-      email: entry.userId.email,
-      score: Math.round(entry.score),
-      accuracy: Math.round(entry.accuracy),
-      correctAnswers: entry.correctAnswers,
-      totalQuestions: entry.totalQuestions,
-      timeTaken: Math.round(entry.timeTaken),
-      finalRankScore: Math.round(entry.rankFactors.finalRankScore * 100),
-      normalizedScore: Math.round(entry.rankFactors.normalizedScore * 100),
-      normalizedTime: Math.round(entry.rankFactors.normalizedTime * 100)
-    }));
+    const leaderboardData = leaderboard.map((entry, index) => {
+      const isGuestEntry = !entry.userId;  
+      const id = isGuestEntry ? entry.guestId : entry.userId?._id;
+      const name = isGuestEntry ? entry.guestName : entry.userId?.name;
+      const email = isGuestEntry ? "" : entry.userId?.email;
+
+      return {
+        rank: index + 1,
+        userId: id?.toString(),
+        name: name || "Anonymous",
+        email,
+        score: Math.round(entry.score),
+        accuracy: Math.round(entry.accuracy),
+        correctAnswers: entry.correctAnswers,
+        totalQuestions: entry.totalQuestions,
+        timeTaken: Math.round(entry.timeTaken),
+        finalRankScore: Math.round(entry.score),
+        normalizedScore: Math.round((entry.score / 100) * 100),
+        normalizedTime: 0 // Not used
+      };
+    });
+
+    let myRank = null;
+    if (userAnalytics) {
+      if (isGuest && userAnalytics.guestId) {
+        myRank = leaderboardData.findIndex(entry => entry.userId === userAnalytics.guestId) + 1;
+      } else if (userAnalytics.userId) {
+        myRank = leaderboardData.findIndex(entry => entry.userId === userAnalytics.userId.toString()) + 1;
+      }
+    }
 
     res.status(200).json({
       leaderboard: leaderboardData,
-      myRank: userAnalytics ? leaderboardData.findIndex(entry => entry.userId.toString() === userId) + 1 : null,
+      myRank,
       myScore: userAnalytics ? Math.round(userAnalytics.score) : null,
       totalParticipants: leaderboardData.length
     });
@@ -215,6 +215,7 @@ export const getLeaderboard = async (req, res) => {
     res.status(500).json({ message: "Failed to get leaderboard" });
   }
 };
+
 
 // Get detailed analytics for a specific session (educator only)
 export const getSessionAnalytics = async (req, res) => {

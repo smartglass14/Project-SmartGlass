@@ -1,12 +1,12 @@
-﻿fastapi==0.110.0
+fastapi==0.110.0
 uvicorn==0.29.0
 requests==2.31.0
 pydantic==2.11.7
 openai==1.30.1
-PyMuPDF==1.21.1
+PyMuPDF==1.23.7
 cassio==0.1.10
 cassandra-driver==3.29.2
 python-dotenv==1.0.1
 langchain==0.1.16
 sentence-transformers==2.6.1
-torch==2.5.1
+torch==2.3.0

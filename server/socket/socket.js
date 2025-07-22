@@ -23,7 +23,6 @@ export default (server) => {
     });
 
     socket.on('join-qna-room', ({ sessionCode, role }) => {
-      console.log(role);
       // Check if user is already in this session
       const rooms = Array.from(socket.rooms);
       if (rooms.includes(sessionCode)) {
@@ -32,7 +31,6 @@ export default (server) => {
       }
 
       socket.join(sessionCode);
-      console.log("joined");
       
       if (!liveQnASessions[sessionCode]) {
         liveQnASessions[sessionCode] = { 
@@ -47,11 +45,9 @@ export default (server) => {
       
       if (role === 'student' && socket.userId) {
         liveQnASessions[sessionCode].participants.add(socket.userId);
-        console.log(liveQnASessions);
       }
       
       const count = liveQnASessions[sessionCode].participants.size;
-      console.log(`Participant count for ${sessionCode}: ${count}`);
       
       io.to(sessionCode).emit('participant-count', { count });
       
@@ -64,7 +60,7 @@ export default (server) => {
     });
 
     socket.on('start-quiz', ({ sessionCode }) => {
-      console.log(`Starting quiz for session ${sessionCode}`);
+
       if (!liveQnASessions[sessionCode]) {
         liveQnASessions[sessionCode] = { 
           participants: new Set(), 
@@ -82,7 +78,7 @@ export default (server) => {
     });
 
     socket.on('educator-change-slide', ({ sessionCode, slideIndex, timer }) => {
-      console.log(`Changing slide for session ${sessionCode} to slide ${slideIndex}`);
+
       if (!liveQnASessions[sessionCode]) {
         liveQnASessions[sessionCode] = { 
           participants: new Set(), 

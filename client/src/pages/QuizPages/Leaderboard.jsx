@@ -12,17 +12,17 @@ const rankColors = [
 ];
 
 function getInitials(name) {
-  if (!name) return "?";
+  if (!name || typeof name !== 'string') return '?';
   return name
-    .split(" ")
+    .split(' ')
     .map((n) => n[0])
-    .join("")
+    .join('')
     .toUpperCase();
 }
 
 export default function Leaderboard() {
   const { code } = useParams();
-  const { user } = useAuth();
+  const { user, guestUser } = useAuth();
   const [leaderboard, setLeaderboard] = useState([]);
   const [myRank, setMyRank] = useState(null);
   const [myScore, setMyScore] = useState(null);
@@ -116,7 +116,7 @@ export default function Leaderboard() {
             </thead>
             <tbody>
               {leaderboard.map((entry, idx) => {
-                const isMe = entry.userId === user._id;
+                const isMe = entry.userId === user?._id || entry.userId === guestUser?.guestId;
                 const rankClass =
                   idx < 3
                     ? rankColors[idx] + " border-2 "
@@ -134,7 +134,9 @@ export default function Leaderboard() {
                       <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-base sm:text-lg font-bold shadow ${isMe ? "bg-purple-200 text-purple-800" : "bg-white text-gray-700"}`}>
                         {getInitials(entry.name)}
                       </div>
-                      <span className="truncate max-w-[80px] sm:max-w-none">{entry.name}</span>
+                      <span className="truncate max-w-[80px] sm:max-w-none">
+                        {typeof entry.name === 'string' && entry.name.trim() ? entry.name : 'Anonymous'}
+                      </span>
                       {isMe && <span className="ml-1 sm:ml-2 px-1 sm:px-2 py-0.5 bg-purple-200 text-purple-700 rounded text-[10px] sm:text-xs font-bold">You</span>}
                     </td>
                     <td className={`py-2 px-2 text-center ${rankClass}`}>

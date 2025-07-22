@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import { Link } from "react-router-dom";
 import RolePopup from "../../components/RolePopup";
 import { useAuth } from "../../context/AuthContext";
 import { useState } from "react";
@@ -9,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 import Hero from '../../components/LandingPage/Hero'
 import CTA from '../../components/LandingPage/CTA'
 import Features from '../../components/LandingPage/Features'
-
+import GuestMode from "../../components/LandingPage/GuestMode";
 
 export default function LandingPage () {
 
@@ -18,10 +17,17 @@ export default function LandingPage () {
   const [showRolePopup, setShowRolePopup] = useState(false);
 
   useEffect(()=> {
+    if(auth.guestUser !==null){
+      let isUsed = localStorage.getItem('isServiceUsed')
+      if(isUsed == 'true'){
+        auth.cleanUpGuest();
+      }
+    }
+
     if (auth.user && !auth.user.role) {
       setShowRolePopup(true);
     }
-  },[auth.user, navigate])
+  },[auth, navigate])
 
   const saveRole = async (role) => {
     if (!role) return;
@@ -59,7 +65,8 @@ export default function LandingPage () {
     >
       <div className="layout-container flex flex-col h-full grow">
         <main className="px-4 md:px-10 lg:px-20 xl:px-40 py-5 flex flex-1 justify-center">
-          <div className="max-w-[960px] flex-1 flex flex-col">
+          <div className="max-w-[960px] flex-1 flex flex-col gap-3">
+            {!auth?.isLoggedIn && !auth?.user &&  <GuestMode /> }
             <Hero />
             <Features />
             <CTA />
