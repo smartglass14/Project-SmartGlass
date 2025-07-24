@@ -7,9 +7,12 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import toast from "react-hot-toast";
 import { submitQuizResult } from "../../services/leaderboardAPI";
+import StudentTextAns from '../../components/QuizComponent/studentTextAns';
+import { useAuth } from "../../context/AuthContext";
 
 export default function LiveQnAStudent() {
   const { sessionCode } = useParams();
+  const {isLoggedIn, user, guestUser} = useAuth();
   const navigate = useNavigate();
   const socket = useSocket();
 
@@ -19,7 +22,7 @@ export default function LiveQnAStudent() {
   const [activeQuestion, setActiveQuestion] = useState(null);
   const [selectedOption, setSelectedOption] = useState(null);
   const [confirmed, setConfirmed] = useState(false);
-  const [timer, setTimer] = useState(30);
+  const [timer, setTimer] = useState(null);
   const [waiting, setWaiting] = useState(true);
   const [swiper, setSwiper] = useState(null);
   const timerRef = useRef();
@@ -27,9 +30,8 @@ export default function LiveQnAStudent() {
   const [timeSpentPerQuestion, setTimeSpentPerQuestion] = useState([]);
   const [startTime, setStartTime] = useState(null);
   const [questionStartTime, setQuestionStartTime] = useState(null);
+  const [textAns, setTextAns] = useState("");
   
-
-  // Fetch quiz data on mount
   useEffect(() => {
     const fetchQuiz = async () => {
       setLoading(true);
@@ -45,7 +47,6 @@ export default function LiveQnAStudent() {
     fetchQuiz();
   }, [sessionCode]);
 
-  // Join socket room on mount
   useEffect(() => {
     if (socket && sessionCode) {
       socket.emit("join-qna-room", { sessionCode, role: "student" });
@@ -64,17 +65,14 @@ export default function LiveQnAStudent() {
     }, 1000);
   };
 
-
-  // Listen for host events and timer sync
   useEffect(() => {
     if (!socket) return;
 
     const handleSync = (data) => {
-      // Save time spent on previous question if we're moving to a new question
-      if (questionStartTime && activeSlide !== data.currentSlide) {
+      if (questionStartTime && activeSlide !== data.currentSlide && activeQuestion && activeQuestion.type === 'mcq') {
         const timeSpent = (Date.now() - questionStartTime) / 1000;
         const updatedTimeSpent = [...timeSpentPerQuestion];
-        updatedTimeSpent[activeSlide] = Math.max(0, Math.min(30, timeSpent)); // Cap at 30 seconds
+        updatedTimeSpent[activeSlide] = Math.max(0, Math.min(30, timeSpent));
         setTimeSpentPerQuestion(updatedTimeSpent);
       }
       setActiveSlide(data.currentSlide || 0);
@@ -83,7 +81,8 @@ export default function LiveQnAStudent() {
       setWaiting(false);
       setConfirmed(false);
       setSelectedOption(null);
-      setQuestionStartTime(Date.now()); // Start timing for new question
+      setTextAns("");
+      setQuestionStartTime(Date.now()); 
       if (swiper) swiper.slideTo(data.currentSlide || 0);
       startTimer();
     };
@@ -94,22 +93,20 @@ export default function LiveQnAStudent() {
     };
 
     const handleQuizFinished = async () => {
-      // Save time spent for the last question
-      if (questionStartTime) {
+      if (questionStartTime && activeQuestion && activeQuestion.type === 'mcq') {
         const timeSpent = (Date.now() - questionStartTime) / 1000;
         const updatedTimeSpent = [...timeSpentPerQuestion];
         updatedTimeSpent[activeSlide] = Math.max(0, Math.min(30, timeSpent));
         setTimeSpentPerQuestion(updatedTimeSpent);
       }
-      // Prepare analytics payload
       const endTime = new Date();
       const payload = {
         sessionCode,
         answers: userAnswers.map(ans => ({
           questionId: ans.questionId,
-          selectedOption: ans.selectedOption, // index
-          correctOption: ans.correctOption,   // index
-          answerGiven: ans.answerGiven,       // index or "Skipped"
+          selectedOption: ans.selectedOption, 
+          correctOption: ans.correctOption,   
+          answerGiven: ans.answerGiven, 
         })),
         startTime,
         endTime,
@@ -133,25 +130,25 @@ export default function LiveQnAStudent() {
       socket.off("quiz-started", handleQuizStarted);
       socket.off("quiz-finished", handleQuizFinished);
     };
-  }, [socket, swiper, navigate, sessionCode, quiz, timer, userAnswers, timeSpentPerQuestion, startTime, questionStartTime, activeSlide]);
+  }, [socket, swiper, navigate, activeQuestion, sessionCode, quiz, timer, userAnswers, timeSpentPerQuestion, startTime, questionStartTime, activeSlide]);
 
-  // Save answer and emit to socket
-  const saveAnswer = () => {
-    if (!activeQuestion || confirmed) return;
+  const saveAnswer = (idx) => {
+    if (confirmed) return;
+    const q = quiz.questions[idx];
     const updated = [...userAnswers];
-    updated[activeSlide] = {
-      questionId: activeQuestion._id,
-      selectedOption: selectedOption, // index (for analytics)
-      selectedOptionId: activeQuestion.options[selectedOption]._id, // ObjectId (for quiz vote)
-      correctOption: activeQuestion.correctOption, // index
+    updated[idx] = {
+      questionId: q._id,
+      selectedOption: selectedOption, 
+      selectedOptionId: q.options[selectedOption]._id, 
+      correctOption: q.correctOption,
       answerGiven: selectedOption !== null ? selectedOption : "Skipped",
     };
     setUserAnswers(updated);
-    // Track time spent for this question
-    if (questionStartTime) {
+
+    if (questionStartTime && q.type === 'mcq') {
       const timeSpent = (Date.now() - questionStartTime) / 1000;
       const updatedTimeSpent = [...timeSpentPerQuestion];
-      updatedTimeSpent[activeSlide] = Math.max(0, Math.min(30, timeSpent));
+      updatedTimeSpent[idx] = Math.max(0, Math.min(30, timeSpent));
       setTimeSpentPerQuestion(updatedTimeSpent);
     }
     try {
@@ -159,8 +156,8 @@ export default function LiveQnAStudent() {
         data: {
           roomId: sessionCode,
           answer: {
-            questionId: activeQuestion._id,
-            selectedOption: activeQuestion.options[selectedOption]._id, // ObjectId
+            questionId: q._id,
+            selectedOption: q.options[selectedOption]._id, 
           }
         }
       });
@@ -171,9 +168,38 @@ export default function LiveQnAStudent() {
     toast.success("Answer submitted!");
   };
 
-  const handleConfirm = () => {
+  const submitTextAnswer = (textAnswer, questionId, idx) => {
+    if (confirmed) return;
+    
+    const updated = [...userAnswers];
+    updated[idx] = {
+      questionId: questionId,
+      answerGiven: textAnswer,
+    };
+    setUserAnswers(updated);
+    
+    try {
+      let data = { roomId: sessionCode, answer: { questionId: questionId, textAnswer }};
+      if ((isLoggedIn && user?.name) || guestUser?.guestName) {
+        data.answer.studentName = user?.name || guestUser.guestName;
+      }
+      socket.emit("submit-text-ans", { data });
+    } catch (err) {
+      console.log(err);
+    }
+    setConfirmed(true);
+    setTextAns(""); 
+    toast.success("Answer submitted!");
+  };
+
+  const handleConfirm = (questionId, questionType, idx) => {
+    if (questionType === 'text') {
+      if (textAns.length > 200) return toast.error("Answer length must be less than 200");
+      submitTextAnswer(textAns, questionId, idx);
+      return;
+    }
     if (selectedOption == null || confirmed) return;
-    saveAnswer();
+    saveAnswer(idx);
   };
 
   if (loading || !quiz) {
@@ -224,43 +250,48 @@ export default function LiveQnAStudent() {
                     
                     <h3 className="font-medium text-lg mb-4">{q.question}</h3>
                     
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {q.options.map((opt, oidx) => (
-                        <div
-                          key={oidx}
-                          className={`cursor-pointer px-4 py-3 rounded-xl border transition-all
-                            ${selectedOption === oidx ? "bg-purple-100 border-purple-500" : "bg-white border-gray-300 hover:border-purple-400"}
-                            ${confirmed ? "opacity-60 pointer-events-none" : ""}
-                          `}
-                          onClick={() => {
-                            if (!confirmed) setSelectedOption(oidx);
-                          }}
-                        >
-                          {opt.text}
-                        </div>
-                      ))}
-                    </div>
+                    {q.type === 'mcq' ? (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {q.options.map((opt, oidx) => (
+                          <div
+                            key={oidx}
+                            className={`cursor-pointer px-4 py-3 rounded-xl border transition-all
+                              ${selectedOption === oidx ? "bg-purple-100 border-purple-500" : "bg-white border-gray-300 hover:border-purple-400"}
+                              ${confirmed ? "opacity-60 pointer-events-none" : ""}
+                            `}
+                            onClick={() => {
+                              if (!confirmed) setSelectedOption(oidx);
+                            }}
+                          >
+                            {opt.text}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <StudentTextAns
+                        value={textAns}
+                        onChange={setTextAns}
+                        disabled={confirmed}
+                      />
+                    )}
                     
                     <button
-                      onClick={handleConfirm}
+                      onClick={() => handleConfirm(q._id, q.type, idx)}
                       className={`mt-6 w-full bg-green-500 text-white font-semibold py-2 rounded-xl hover:bg-green-600 transition ${
-                        selectedOption == null || confirmed
+                        (q.type === 'mcq' ? selectedOption == null : textAns.length === 0) || confirmed
                           ? "opacity-60 cursor-not-allowed" 
                           : ""
                       }`}
-                      disabled={selectedOption == null || confirmed}
+                      disabled={(q.type === 'mcq' ? selectedOption == null : textAns.length === 0) || confirmed}
                     >
-                      {confirmed ? "Answer Submitted" : "Confirm Answer"}
+                      Confirm
                     </button>
                     
-                    {confirmed && !(activeSlide < quiz.questions.length - 1) ?
-                     (<div className="text-green-600 font-semibold mt-4 text-center">
-                        ✓ Answer submitted! Waiting for next question...
-                      </div>):
-                      (<div className="text-green-600 font-semibold mt-4 text-center">
-                        ✓ Answer submitted! Waiting for host to finish...
-                      </div>)
-                  }
+                    {confirmed && (
+                      <div className="text-green-600 font-semibold mt-4 text-center">
+                        ✓ Answer submitted! {activeSlide < quiz.questions.length - 1 ? 'Waiting for host to change slide...' : 'Waiting for host to finish...'}
+                      </div>
+                    )}
                   </div>
                 </SwiperSlide>
               ))}

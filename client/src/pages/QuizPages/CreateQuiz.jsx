@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { X } from "lucide-react";
+import { X, LoaderCircle, Turtle } from "lucide-react";
 import { toast } from 'react-hot-toast'
 import {API, handleApi} from "../../services/api"
 import { useAuth } from '../../context/AuthContext';
 import SessionCreationPopup from "../../components/SessionCreationPopup";
+import McqQuiz from "../../components/QuizComponent/McqQuiz";
 import "swiper/css";
 
 export default function CreateQuiz() {
@@ -12,6 +13,7 @@ export default function CreateQuiz() {
   const [questions, setQuestions] = useState([
     {
       question: "",
+      type: 'mcq',
       options: ["", "", "", ""],
       correctOption: null,
       editingOption: null,
@@ -21,6 +23,7 @@ export default function CreateQuiz() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [sessionCode, setSessionCode] = useState(null);
   const [popUp, setPopUp] = useState(false);
+  const [loading, setLoading] = useState(false);
   const {authToken} = useAuth();
 
   const addQuestion = () => {
@@ -28,6 +31,7 @@ export default function CreateQuiz() {
       ...questions,
       {
         question: "",
+        type: 'mcq',
         options: ["", "", "", ""],
         correctOption: null,
         editingOption: null,
@@ -76,6 +80,20 @@ export default function CreateQuiz() {
     setQuestions(questions.filter((_, i)=> i!= idx));
   }
 
+  const updateQuestionType = (index, type) => {
+    const updated = [...questions];
+    updated[index].type = type;
+    // Reset fields based on type
+    if (type === 'mcq') {
+      updated[index].options = ["", "", "", ""];
+      updated[index].correctOption = null;
+    } else {
+      delete updated[index].options;
+      delete updated[index].correctOption;
+    }
+    setQuestions(updated);
+  };
+
   const checkForError = ()=> {
     if (!title.trim()) {
         toast.error("Please enter a quiz title.");
@@ -95,18 +113,20 @@ export default function CreateQuiz() {
           setTimeout(() => swiperInstance?.slideTo(i), 100);
           return 1;
         }
-    
-        const hasEmptyOption = q.options.some((opt) => !opt.trim());
-        if (hasEmptyOption) {
-          toast.error(`All options must be filled for Question ${i + 1}.`);
-          setTimeout(() => swiperInstance?.slideTo(i), 100);
-          return 1;
-        }
-    
-        if (q.correctOption === null || q.correctOption === undefined) {
-          toast.error(`Please select a correct option for Question ${i + 1}.`);
-          setTimeout(() => swiperInstance?.slideTo(i), 100);
-          return 1;
+        
+        if(q.type === 'mcq'){
+          const hasEmptyOption = q.options.some((opt) => !opt.trim());
+          if (hasEmptyOption) {
+            toast.error(`All options must be filled for Question ${i + 1}.`);
+            setTimeout(() => swiperInstance?.slideTo(i), 100);
+            return 1;
+          }
+          
+          if (q.correctOption === null || q.correctOption === undefined) {
+            toast.error(`Please select a correct option for Question ${i + 1}.`);
+            setTimeout(() => swiperInstance?.slideTo(i), 100);
+            return 1;
+          }
         }
       }
   }
@@ -114,6 +134,9 @@ export default function CreateQuiz() {
   const handleSubmit = async() => {
     let err = checkForError();
     if(err) return;
+
+    setLoading(true);
+
     // eslint-disable-next-line no-unused-vars
     const cleanQuestions = questions.map(({ editingOption, ...rest }) => rest);
     const cleanData = {
@@ -131,6 +154,7 @@ export default function CreateQuiz() {
 
     if(sessionRes.error){
         toast.error(sessionRes.error.message)
+        setLoading(false);
         return;
     }
     
@@ -142,7 +166,9 @@ export default function CreateQuiz() {
     } ))
     
     if(res.error){
-        toast.error(res.error.message);
+      toast.error(res.error.message);
+      setLoading(false)
+      return;
     }
 
     if(res.status == 201){
@@ -152,11 +178,13 @@ export default function CreateQuiz() {
             {
                 question: "",
                 options: ["", "", "", ""],
+                type: 'mcq',
                 correctOption: null,
                 editingOption: null,
             },
         ])
     }
+    setLoading(false);
     setSessionCode(sessionRes?.data?.sessionCode);
     setPopUp(true);
   };
@@ -164,14 +192,21 @@ export default function CreateQuiz() {
   return (
     <>
     {
-        sessionCode && popUp &&
-        <SessionCreationPopup sessionCode={sessionCode} onClose={()=> setPopUp(false)} type={"quiz"} />
+      sessionCode && popUp &&
+      <SessionCreationPopup sessionCode={sessionCode} onClose={()=> setPopUp(false)} type={"quiz"} />
     }
+
+    { loading && 
+      <div className="fixed inset-0 bg-slate-200/20 flex justify-center items-center z-50">
+        <LoaderCircle className="animate-spin" size={50} />
+      </div> 
+    }
+   
     <div className="max-w-3xl mx-auto p-6 mt-4">
       <h2 className="text-3xl font-bold mb-4 text-purple-700">🧠 Create Quiz</h2>
 
       <input
-        type="text"
+        type="text" 
         placeholder="Enter quiz title"
         className="w-full py-2 px-4 text-lg font-semibold border-2 border-slate-500 rounded-lg mb-4"
         value={title}
@@ -186,64 +221,53 @@ export default function CreateQuiz() {
       >
         {questions.map((q, qIdx) => (
           <SwiperSlide key={qIdx}>
-            <div className="border-2 border-gray-400 rounded-xl p-5 bg-white shadow-md">
+            <div
+              className="border-2 border-gray-400 rounded-xl p-5 bg-white shadow-md flex flex-col justify-start" >
               <div className="flex justify-between items-center">
                 <h3 className="text-lg font-semibold mb-3 text-gray-700">
                     Question {qIdx + 1}
                 </h3>
-                {
-                    (qIdx+1) > 2 && 
-                    <X className="hover:cursor-pointer" onClick={()=> removeQuestion(qIdx)}/>
-                }
+
+                <div className="flex gap-3">
+                  <label className="inline-flex items-center cursor-pointer sm:gap-3 gap-2 mb-2">
+                    <span className="ms-3 text-md font-semibold">MCQ</span>
+                    <input
+                      type="checkbox"
+                      checked={q.type === 'text'}
+                      onChange={e => updateQuestionType(qIdx, e.target.checked ? 'text' : 'mcq')}
+                      className="sr-only peer"
+                      />
+                    <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600 dark:peer-checked:bg-blue-600"></div>
+                    <span className="text-md font-semibold">Text</span>
+                  </label>
+                  {
+                      (qIdx+1) > 2 && 
+                      <X className="hover:cursor-pointer" onClick={()=> removeQuestion(qIdx)}/>
+                  }
+                </div>
               </div>
+              
               <input
                 type="text"
                 className="w-full py-2 px-3 border rounded-lg mb-4 font-medium"
-                placeholder="Enter question"
+                placeholder='Enter your Question here...' 
                 value={q.question}
-                onChange={(e) => updateQuestion(qIdx, "question", e.target.value)}
+                onChange={e => updateQuestion(qIdx, "question", e.target.value)}
               />
 
-              <div className="space-y-2">
-                {q.options.map((opt, optIdx) => (
-                  <div
-                    key={optIdx}
-                    onClick={() => markAsCorrect(qIdx, optIdx)}
-                    className={`rounded-lg px-4 py-2 border transition cursor-pointer ${
-                      q.correctOption === optIdx
-                        ? "bg-green-100 border-green-500"
-                        : "bg-gray-100 border-gray-300 hover:border-gray-400"
-                    }`}
-                  >
-                    {q.editingOption === optIdx ? (
-                      <input
-                        type="text"
-                        value={opt}
-                        onChange={(e) =>
-                          updateOptionText(qIdx, optIdx, e.target.value)
-                        }
-                        onBlur={() => finishEditing(qIdx)}
-                        autoFocus
-                        className="w-full bg-transparent outline-none"
-                      />
-                    ) : (
-                      <div
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setEditing(qIdx, optIdx);
-                        }}
-                        className="flex justify-between items-center"
-                      >
-                        <span>{opt || `Option ${optIdx+1}`}</span>
-                        {q.correctOption === optIdx && (
-                          <span className="text-green-600 font-bold">✅</span>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                ))}
-                <span className="text-xs font-bold">Double click on any option to select it as correct option for given Question</span>
-              </div>
+              {/* Render MCQ or TextQuiz component based on type */}
+              {q.type === 'mcq' && (
+                <McqQuiz
+                  question={q}
+                  qIdx={qIdx}
+                  updateQuestion={updateQuestion}
+                  updateOptionText={updateOptionText}
+                  setEditing={setEditing}
+                  finishEditing={finishEditing}
+                  markAsCorrect={markAsCorrect}
+                />
+              )}
+              {q.type==='text' && <p className="text-xs font-bold" >For auto-grading of students switch to MCQ type for question</p>}
             </div>
           </SwiperSlide>
         ))}

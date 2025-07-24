@@ -1,6 +1,9 @@
 import { Link } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 const Hero = () => {
+  const { isLoggedIn } = useAuth();
+
   return (
     <div className="@container px-4 sm:px-6">
       <div
@@ -16,7 +19,7 @@ const Hero = () => {
         <p className="text-sm sm:text-base max-w-xl">
           Create dynamic presentations with real-time polls, quizzes, and more to boost student engagement.
         </p>
-        <Link to={'/login'} className="px-6 py-3 bg-[#2a2aed] text-white text-sm font-bold rounded-xl">
+        <Link to={isLoggedIn? '/dashboard' : '/login'} className="px-6 py-3 bg-[#2a2aed] text-white text-sm font-bold rounded-xl">
         Get Started
         </Link>
       </div>

@@ -19,7 +19,7 @@ export const authenticate =  async (req, res) => {
       });
     }
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ id: user._id, name: user.name, role: user.role }, process.env.JWT_SECRET, {
       expiresIn: "7d"
     });
 
@@ -47,7 +47,11 @@ export const addRole = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    res.status(200).json({ user, message: "Role updated successfully" });
+    const token = jwt.sign({ id: user._id, name: user.name, role: user.role }, process.env.JWT_SECRET, {
+      expiresIn: "7d"
+    });
+
+    res.status(200).json({ token, user, message: "Role updated successfully" });
   } catch (error) {
     console.error("Error updating role:", error);
     res.status(500).json({ message: "Failed to update role" });

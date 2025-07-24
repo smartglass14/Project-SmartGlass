@@ -1,4 +1,4 @@
-import jwt, { decode } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 
 export default function jwtAuth (req, res, next) {
   const token = req.header("Authorization")?.replace("Bearer ", "");

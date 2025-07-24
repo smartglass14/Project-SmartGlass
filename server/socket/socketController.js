@@ -103,3 +103,103 @@ export const submitVote = async(data, socket)=> {
     console.log("Vote-submit-error:", err.message);
   }
 }
+
+export const joinLiveQnA = (socket, sessionCode, role, liveQnASessions, io) => {
+  // Check if user is already in this session
+  const rooms = Array.from(socket.rooms);
+  if (rooms.includes(sessionCode)) {
+    socket.emit("success", {msg: "Session Already Joined", status: "success"});
+    return { alreadyJoined: true };
+  }
+
+  socket.join(sessionCode);
+
+  if (!liveQnASessions[sessionCode]) {
+    liveQnASessions[sessionCode] = { 
+      participants: new Set(), 
+      started: false,
+      currentSlide: 0,
+      timer: 30,
+      answers: {},
+      timerStart: null
+    };
+  }
+
+  if (role === 'student' && socket.userId) {
+    liveQnASessions[sessionCode].participants.add(socket.userId);
+  }
+
+  const count = liveQnASessions[sessionCode].participants.size;
+
+  io.to(sessionCode).emit('participant-count', { count });
+
+  if (liveQnASessions[sessionCode].started) {
+    socket.emit('sync-current-slide', liveQnASessions[sessionCode]);
+    socket.emit('quiz-started');
+  }
+
+  socket.emit("success", {msg: "Session Joined", status: "success"});
+  return { alreadyJoined: false, count, started: liveQnASessions[sessionCode].started };
+};
+
+export const updateTextAns = async(data, socket)=> {
+  const { roomId: code, answer } = data;
+  const studentName = socket.userName;
+
+  try {
+    if (!code || !answer || !answer.questionId || answer?.studentName !== studentName) {
+      return socket.emit("error", {
+        type: "data-error",
+        msg: "Incomplete data or student name don't match.",
+      });
+    }
+
+    const session = await Session.findOne({ sessionCode: code });
+    if (!session) {
+      return socket.emit("error", {
+        type: "code-error",
+        msg: "Invalid Session Code",
+      });
+    }
+
+    const quiz = await Quiz.findOneAndUpdate(
+      {
+        session: session._id,
+        "questions._id": answer.questionId,
+        "questions.type": 'text'
+      },
+      {
+        $push: {
+          "questions.$[q].answersGivenBy": {
+            studentName: studentName,
+            answer: answer.textAnswer || "Skipped"
+          }
+        }
+      },
+      {
+        arrayFilters: [{ "q._id": answer.questionId }],
+        new: true
+      }
+    );
+    
+    if (!quiz) {
+      return socket.emit("error", {
+        type: "update-error",
+        msg: "Failed to update text answer. Question not found or not a text question.",
+      });
+    }
+
+    socket.to(code).emit("update-text-ans", {
+      questionId: answer.questionId,
+      studentName: answer.studentName,
+      answer: answer.textAnswer || "Skipped"
+    });
+
+  } catch (err) {
+    console.error("Socket updateTextAns error:", err.message);
+    socket.emit("error", {
+      type: "server-error",
+      msg: "Something went wrong while updating text answer.",
+    });
+  }
+}

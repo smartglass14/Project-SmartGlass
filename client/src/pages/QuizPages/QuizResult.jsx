@@ -12,6 +12,7 @@ import { handleApi, API } from "../../services/api";
 import toast from "react-hot-toast";
 import { useAuth } from "../../context/AuthContext";
 import { useSocket } from "../../services/socket";
+import TextAnsPopUp from "../../components/QuizComponent/TextAnsPopUp";
 
 export default function QuizResult() {
   const auth = useAuth();
@@ -19,6 +20,8 @@ export default function QuizResult() {
   const { code } = useParams();
   const navigate = useNavigate();
   const [quiz, setQuiz] = useState(null);
+  const [showTextAnsPopup, setShowTextAnsPopup] = useState(false);
+  const [popupQuestionId, setPopupQuestionId] = useState(null);
 
   useEffect(() => {
     const fetchQuiz = async () => {
@@ -55,10 +58,13 @@ export default function QuizResult() {
 
     socket.emit('join-room', code);
     socket.on('update-answer', handleQuizUpdate)
+    socket.on('update-text-ans', handleTextAnsUpdate)
 
     return ()=> {
       socket.off('join-room');
       socket.off('update-answer', handleQuizUpdate);
+      socket.off('update-text-ans', handleTextAnsUpdate)
+
     }
 
   },[socket, code])
@@ -83,28 +89,51 @@ export default function QuizResult() {
         return { ...prevQuiz, questions: updatedQuestions };
       });
   }
+  
+  const handleTextAnsUpdate = (data) => {
+    const { questionId, studentName, answer } = data;
+    setQuiz((prevQuiz) => {
+      if (!prevQuiz) return prevQuiz;
+      const updatedQuestions = prevQuiz.questions.map((q) => {
+        if (q._id !== questionId) return q;
+
+        const updatedAnswers = Array.isArray(q.answersGivenBy)
+          ? [...q.answersGivenBy, { studentName, answer }]
+          : [{ studentName, answer }];
+        return { ...q, answersGivenBy: updatedAnswers };
+      });
+      return { ...prevQuiz, questions: updatedQuestions };
+    });
+  };
 
   if (!quiz) return null;
 
   const answerDistributions = quiz.questions.map((q) => {
-    const data = q.options.map((opt, idx) => ({
-      option: opt.text,
-      count: opt.votes || 0,
-      fill: idx === q.correctOption ? "#22c55e" : "#8B5CF6",
-    }));
-  
-    const totalVotes = data.reduce((sum, opt) => sum + opt.count, 0);
-  
-    return {
-      id: q._id,
-      question: q.question,
-      correct: q.correctOption,
-      totalVotes,
-      data,
-    };
+    if (q.type === 'mcq') {
+      const data = q.options.map((opt, idx) => ({
+        option: opt.text,
+        count: opt.votes || 0,
+        fill: idx === q.correctOption ? "#22c55e" : "#8B5CF6",
+      }));
+      const totalVotes = data.reduce((sum, opt) => sum + opt.count, 0);
+      return {
+        id: q._id,
+        type: 'mcq',
+        question: q.question,
+        correct: q.correctOption,
+        totalVotes,
+        data,
+      };
+    } else {
+      // For text questions, returning the answers only
+      return {
+        id: q._id,
+        type: 'text',
+        question: q.question,
+        answers: q.answersGivenBy || [],
+      };
+    }
   });
-  
-
 
   return (
     <div className="min-h-screen p-6 bg-gray-50">
@@ -122,25 +151,53 @@ export default function QuizResult() {
             <h4 className="font-semibold mb-2">
               Q{idx + 1}: {dist.question}
             </h4>
-            <div className="sm:px-20 sm:pt-5">
-              <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={dist.data}>
-                  <XAxis dataKey="option" />
-                  <Tooltip />
-                  <Bar dataKey="count" name="Votes"  fill="">
-                  {
-                    dist.data.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.fill} />
-                    ))
-                  }
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-              <p className="text-sm font-bold" >Total Votes: {dist.totalVotes}</p>
-            </div>
+            {dist.type === 'mcq' ? (
+              <div className="sm:px-20 sm:pt-5">
+                <ResponsiveContainer width="100%" height={250}>
+                  <BarChart data={dist.data}>
+                    <XAxis dataKey="option" />
+                    <Tooltip />
+                    <Bar dataKey="count" name="Votes"  fill="">
+                    {
+                      dist.data.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.fill} />
+                      ))
+                    }
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+                <p className="text-sm font-bold" >Total Votes: {dist.totalVotes}</p>
+              </div>
+            ) : (
+              <div className="flex flex-col items-start gap-2 sm:px-20 sm:pt-5">
+                <button
+                  className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 font-semibold flex justify-center items-center gap-3"
+                  onClick={() => {
+                    setPopupQuestionId(dist.id);
+                    setShowTextAnsPopup(true);
+                  }}
+                >
+                  <span>See Answers</span>
+                  <span className="rounded-full font-bold text-xs bg-gray-700 py-1 px-2">
+                    {dist.answers.length}
+                  </span>
+                </button>
+              </div>
+            )}
           </div>
         ))}
       </div>
+      {showTextAnsPopup && popupQuestionId && (
+        <TextAnsPopUp
+          answers={
+            quiz.questions.find((q) => q._id === popupQuestionId)?.answersGivenBy || []
+          }
+          onClose={() => {
+            setShowTextAnsPopup(false);
+            setPopupQuestionId(null);
+          }}
+        />
+      )}
     </div>
   );
 }

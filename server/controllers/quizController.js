@@ -14,14 +14,26 @@ export const createQuiz = async(req, res)=>{
             return res.status(400).json({message: "Quiz already exists"})
         }
 
-        const transformedQuestions = quizData.questions.map(q => ({
-            question: q.question,
-            correctOption: q.correctOption,
-            options: q.options.map(opt => ({
-              text: opt,   
-              votes: 0
-            }))
-          }));
+        const transformedQuestions = quizData.questions.map(q => {
+            if (q.type === 'mcq') {
+                return {
+                    question: q.question,
+                    type: 'mcq',
+                    correctOption: q.correctOption,
+                    options: q.options.map(opt => ({
+                        text: opt,
+                        votes: 0
+                    })),
+                    answersGivenBy: [] // for consistency, though not used for MCQ
+                };
+            } else if (q.type === 'text') {
+                return {
+                    question: q.question,
+                    type: 'text',
+                    answersGivenBy: []
+                };
+            }
+        });
     
         const newQuiz = new Quiz({
             title: quizData.title,

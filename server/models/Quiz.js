@@ -7,14 +7,24 @@ const questionSchema = new Schema({
     required: true,
     trim: true,
   },
+  type: {
+    type: String,
+    enum: ['mcq', 'text'],
+    required: true,
+    default: 'mcq',
+  },
   options: {
     type: [optionSchema],
+    required: function() { return this.type === 'mcq'; },
   },
   correctOption: {
     type: Number,
-    required: true,
+    required: function() { return this.type === 'mcq'; },
     min: 0,
   },
+  answersGivenBy: [
+    { studentName: String, answer: String }
+  ],
 });
 
 const quizSchema = new Schema({
