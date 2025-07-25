@@ -22,7 +22,7 @@ function getInitials(name) {
 
 export default function Leaderboard() {
   const { code } = useParams();
-  const { user, guestUser } = useAuth();
+  const { user, guestUser, isLoggedIn } = useAuth();
   const [leaderboard, setLeaderboard] = useState([]);
   const [myRank, setMyRank] = useState(null);
   const [myScore, setMyScore] = useState(null);
@@ -44,8 +44,8 @@ export default function Leaderboard() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-purple-100 to-blue-100 p-2 sm:p-4">
       <div className="bg-white rounded-3xl shadow-2xl p-4 sm:p-8 max-w-2xl w-full border border-gray-200 relative">
-        <Link to="/dashboard" className="absolute left-3 sm:left-6 top-3 sm:top-6 flex items-center gap-1 text-blue-600 hover:underline text-xs sm:text-sm font-semibold">
-          <ArrowLeft size={14} /> Dashboard
+        <Link to={isLoggedIn? '/dashboard': '/'} className="absolute left-3 sm:left-6 top-3 sm:top-6 flex items-center gap-1 text-blue-600 hover:underline text-xs sm:text-sm font-semibold">
+          <ArrowLeft size={14} /> {isLoggedIn? "Dashboard" : "Home"}
         </Link>
         <h2 className="text-2xl sm:text-4xl font-extrabold text-center text-purple-700 mb-2 tracking-tight flex items-center justify-center gap-2">
           <Crown className="text-yellow-400" size={28} /> <span className="hidden sm:inline">Leaderboard</span><span className="sm:hidden">Top Scores</span>

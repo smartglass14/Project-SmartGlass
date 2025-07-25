@@ -15,13 +15,18 @@ export const AuthProvider = ({ children }) => {
 
     const storedUser = localStorage.getItem("user");
     const storedToken = localStorage.getItem("authToken");
+    const tokenExpiry = localStorage.getItem("tokenExpiry")
     const storedGuest = JSON.parse(localStorage.getItem("guest"));
 
     if(storedGuest && storedGuest !== undefined){
       setGuestUser(storedGuest);
     }
 
-    if ((storedUser && storedToken) && (storedUser!=undefined && storedToken!==undefined)) {
+    if ((storedUser && storedToken && tokenExpiry) && (storedUser!=undefined && storedToken!==undefined && tokenExpiry!=undefined)) {
+      if (new Date().getTime() > tokenExpiry){
+        logOutUser();
+        return;
+      }
       setUser(JSON.parse(storedUser));
       setAuthToken(storedToken);
       setIsLoggedIn(true);
@@ -34,8 +39,10 @@ export const AuthProvider = ({ children }) => {
     setUser(newUser);
     setAuthToken(token);
     setIsLoggedIn(true);
+    const tokenExpiry = new Date().getTime() + 7 * 24 * 60 * 60 * 1000;
     localStorage.setItem("user", JSON.stringify(newUser));
     localStorage.setItem("authToken", token);
+    localStorage.setItem("tokenExpiry", tokenExpiry);
   };
 
   const provideGuestAuth = (data)=> {
@@ -53,6 +60,7 @@ export const AuthProvider = ({ children }) => {
   const logOutUser = () => {
     localStorage.removeItem("user");
     localStorage.removeItem("authToken");
+    localStorage.removeItem("tokenExpiry");
     setUser(null);
     setAuthToken(null);
     setIsLoggedIn(false);

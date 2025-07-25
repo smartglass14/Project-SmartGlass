@@ -86,25 +86,29 @@ export const submitQuizResult = async (req, res) => {
       return res.status(400).json({ message: "Quiz already submitted" });
     }
 
-    let correctAnswers = 0;
-    let totalQuestions = quiz.questions.length;
     const timeTaken = (new Date(endTime) - new Date(startTime)) / 1000; 
 
-    const processedAnswers = answers.map((answer, index) => {
-      const question = quiz.questions[index];
-      const isCorrect = answer.selectedOption === question.correctOption;
-      
-      if (isCorrect) correctAnswers++;
-      
-      return {
-        questionIndex: index,
-        selectedOption: answer.selectedOption,
-        isCorrect,
-        timeSpent: timeSpentPerQuestion[index] || 0
-      };
-    });
+    // Only use MCQ questions for scoring
+    const mcqQuestions = quiz.questions.filter(q => q.type === 'mcq');
+    const totalMcq = mcqQuestions.length;
 
-    const score = (correctAnswers / totalQuestions) * 100;
+    let correctAnswers = 0;
+    const processedAnswers = answers
+      .map((answer, index) => {
+        const question = quiz.questions[index];
+        if (question.type !== 'mcq') return null;
+        const isCorrect = answer.selectedOption === question.correctOption;
+        if (isCorrect) correctAnswers++;
+        return {
+          questionIndex: index,
+          selectedOption: answer.selectedOption,
+          isCorrect,
+          timeSpent: timeSpentPerQuestion[index] || 0
+        };
+      })
+      .filter(Boolean); 
+
+    const score = totalMcq > 0 ? (correctAnswers / totalMcq) * 100 : 0;
     const accuracy = score;
 
     const analytics = new StudentAnalytics({
@@ -114,9 +118,9 @@ export const submitQuizResult = async (req, res) => {
       quizId: quiz._id,
       sessionId: session._id,
       score,
-      totalQuestions,
+      totalQuestions: totalMcq,
       correctAnswers,
-      incorrectAnswers: totalQuestions - correctAnswers,
+      incorrectAnswers: totalMcq - correctAnswers,
       timeTaken,
       startTime: new Date(startTime),
       endTime: new Date(endTime),
@@ -133,12 +137,10 @@ export const submitQuizResult = async (req, res) => {
       score,
       accuracy,
       correctAnswers,
-      totalQuestions
+      totalQuestions: totalMcq
     });
 
-  } catch (error) {
-    console.error('Error submitting quiz result:', error);
-    
+  } catch (error) {    
     if (error.code === 11000) {
       return res.status(400).json({ message: "Quiz already submitted" });
     }

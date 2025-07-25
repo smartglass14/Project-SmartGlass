@@ -5,10 +5,10 @@ import { useState } from "react";
 import {API, handleApi} from "../../services/api";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-import Hero from '../../components/LandingPage/Hero'
-import CTA from '../../components/LandingPage/CTA'
-import Features from '../../components/LandingPage/Features'
-import GuestMode from "../../components/LandingPage/GuestMode";
+import Hero from '../../components/LandingComponents/Hero'
+import CTA from '../../components/LandingComponents/CTA'
+import Features from '../../components/LandingComponents/Features'
+import GuestMode from "../../components/LandingComponents/GuestMode";
 
 export default function LandingPage () {
 
@@ -39,7 +39,7 @@ export default function LandingPage () {
         withCredentials: true }));
 
         if (res.status === 200) {
-          auth.loginContext( res.data.user, auth.authToken);
+          auth.loginContext( res.data.user, res.data.token);
           setShowRolePopup(false);
           toast.success(res.data.message);
           navigate('/dashboard');

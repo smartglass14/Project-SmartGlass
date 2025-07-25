@@ -84,8 +84,9 @@ npm run dev
 
 ## 📦 Usage
 - Visit the client at `http://localhost:5173` (or as specified by Vite)
-- Backend runs on `http://localhost:5000` (default)
-- AI Model runs on its configured port (see `AI-Model/main.py`)
+- Backend runs on `http://localhost:4000` (default)
+- AI Model runs on its configured port (see `AI-Model/main.py`) (default 8000)
+
 
 ## 🤝 Contributing
 1. Fork the repository
