@@ -87,6 +87,7 @@ npm run dev
 - Backend runs on `http://localhost:4000` (default)
 - AI Model runs on its configured port (see `AI-Model/main.py`) (default 8000)
 
+
 ## 🤝 Contributing
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/YourFeature`)
