@@ -15,7 +15,7 @@ import { useSocket } from "../../services/socket";
 import TextAnsPopUp from "../../components/QuizComponent/TextAnsPopUp";
 
 export default function QuizResult() {
-  const auth = useAuth();
+  const {isLoggedIn, authToken} = useAuth();
   const socket = useSocket();
   const { code } = useParams();
   const navigate = useNavigate();
@@ -25,14 +25,14 @@ export default function QuizResult() {
 
   useEffect(() => {
     const fetchQuiz = async () => {
-      if(!auth?.authToken || !auth?.user){
-        toast.error("login to access this page");
-        return
-      }
+        if(!authToken && !isLoggedIn){
+          toast.error("login to access this page");
+          return
+        }
 
       const res = await handleApi(API.get(`/quiz/result/${code}`,{
         headers: {
-          Authorization: `Bearer ${auth?.authToken}`
+          Authorization: `Bearer ${authToken}`
         },
       }));
 
@@ -49,7 +49,7 @@ export default function QuizResult() {
       };
     };
     fetchQuiz();
-  }, [code, navigate, auth]);
+  }, [code, navigate, isLoggedIn, authToken]);
 
   useEffect(()=> {
     if(!socket ){

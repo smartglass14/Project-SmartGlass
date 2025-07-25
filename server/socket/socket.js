@@ -40,8 +40,8 @@ export default (server) => {
       liveQnASessions[sessionCode].currentSlide = 0;
       liveQnASessions[sessionCode].timerStart = Date.now();
       
-      io.to(sessionCode).emit('quiz-started');
-      io.to(sessionCode).emit('sync-current-slide', liveQnASessions[sessionCode]);
+      socket.to(sessionCode).emit('quiz-started');
+      socket.to(sessionCode).emit('sync-current-slide', liveQnASessions[sessionCode]);
     });
 
     socket.on('educator-change-slide', ({ sessionCode, slideIndex, timer }) => {
@@ -57,18 +57,18 @@ export default (server) => {
       liveQnASessions[sessionCode].currentSlide = slideIndex;
       liveQnASessions[sessionCode].timer = timer;
       liveQnASessions[sessionCode].timerStart = Date.now();
-      io.to(sessionCode).emit('sync-current-slide', liveQnASessions[sessionCode]);
+      socket.to(sessionCode).emit('sync-current-slide', liveQnASessions[sessionCode]);
     });
 
     socket.on('finish-quiz', ({sessionCode})=> {
       if (liveQnASessions[sessionCode]) {
         delete liveQnASessions[sessionCode];
       }
-      io.to(sessionCode).emit("quiz-finished");
+      socket.to(sessionCode).emit("quiz-finished");
     })
 
     socket.on('timer-expired', ({ sessionCode }) => {
-      io.to(sessionCode).emit('timer-expired');
+      socket.to(sessionCode).emit('timer-expired');
     });
 
     socket.on('submit-answer', ({ data }) => {

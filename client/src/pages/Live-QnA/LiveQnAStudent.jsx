@@ -1,19 +1,18 @@
 import { useEffect, useRef, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useSocket } from "../../services/socket";
 import { LoaderCircle } from "lucide-react";
 import { API, handleApi } from "../../services/api";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import toast from "react-hot-toast";
-import { submitQuizResult } from "../../services/leaderboardAPI";
 import StudentTextAns from '../../components/QuizComponent/studentTextAns';
 import { useAuth } from "../../context/AuthContext";
+import StudentQuizResult from '../../components/StudentQuizResult.jsx';
 
 export default function LiveQnAStudent() {
   const { sessionCode } = useParams();
   const {isLoggedIn, user, guestUser} = useAuth();
-  const navigate = useNavigate();
   const socket = useSocket();
 
   const [quiz, setQuiz] = useState(null);
@@ -31,6 +30,7 @@ export default function LiveQnAStudent() {
   const [startTime, setStartTime] = useState(null);
   const [questionStartTime, setQuestionStartTime] = useState(null);
   const [textAns, setTextAns] = useState("");
+  const [showResult, setShowResult] = useState(false);
   
   useEffect(() => {
     const fetchQuiz = async () => {
@@ -99,26 +99,8 @@ export default function LiveQnAStudent() {
         updatedTimeSpent[activeSlide] = Math.max(0, Math.min(30, timeSpent));
         setTimeSpentPerQuestion(updatedTimeSpent);
       }
-      const endTime = new Date();
-      const payload = {
-        sessionCode,
-        answers: userAnswers.map(ans => ({
-          questionId: ans.questionId,
-          selectedOption: ans.selectedOption, 
-          correctOption: ans.correctOption,   
-          answerGiven: ans.answerGiven, 
-        })),
-        startTime,
-        endTime,
-        timeSpentPerQuestion,
-      };
-      try {
-        await submitQuizResult(payload);
-        localStorage.setItem('isServiceUsed', true)
-        navigate(`/leaderboard/${sessionCode}`);
-      } catch (err) {
-        console.log(err);
-      }
+
+      setShowResult(true);
     };
 
     socket.on("sync-current-slide", handleSync);
@@ -130,7 +112,7 @@ export default function LiveQnAStudent() {
       socket.off("quiz-started", handleQuizStarted);
       socket.off("quiz-finished", handleQuizFinished);
     };
-  }, [socket, swiper, navigate, activeQuestion, sessionCode, quiz, timer, userAnswers, timeSpentPerQuestion, startTime, questionStartTime, activeSlide]);
+  }, [socket, swiper, activeQuestion, sessionCode, quiz, timer, userAnswers, timeSpentPerQuestion, startTime, questionStartTime, activeSlide]);
 
   const saveAnswer = (idx) => {
     if (confirmed) return;
@@ -207,6 +189,20 @@ export default function LiveQnAStudent() {
       <div className="flex justify-center items-center h-screen">
         <LoaderCircle className="animate-spin" size={40} />
       </div>
+    );
+  }
+
+  if (showResult) {
+    return (
+      <StudentQuizResult
+        userAnswers={userAnswers}
+        questions={quiz?.questions}
+        isLoggedIn={isLoggedIn ? isLoggedIn : guestUser ? true : false}
+        code={sessionCode}
+        startTime={startTime}
+        endTime={new Date()}
+        timeSpentPerQuestion={timeSpentPerQuestion}
+      />
     );
   }
 

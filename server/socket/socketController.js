@@ -105,7 +105,7 @@ export const submitVote = async(data, socket)=> {
 }
 
 export const joinLiveQnA = (socket, sessionCode, role, liveQnASessions, io) => {
-  // Check if user is already in this session
+
   const rooms = Array.from(socket.rooms);
   if (rooms.includes(sessionCode)) {
     socket.emit("success", {msg: "Session Already Joined", status: "success"});
@@ -131,7 +131,7 @@ export const joinLiveQnA = (socket, sessionCode, role, liveQnASessions, io) => {
 
   const count = liveQnASessions[sessionCode].participants.size;
 
-  io.to(sessionCode).emit('participant-count', { count });
+  socket.to(sessionCode).emit('participant-count', { count });
 
   if (liveQnASessions[sessionCode].started) {
     socket.emit('sync-current-slide', liveQnASessions[sessionCode]);
@@ -145,7 +145,7 @@ export const joinLiveQnA = (socket, sessionCode, role, liveQnASessions, io) => {
 export const updateTextAns = async(data, socket)=> {
   const { roomId: code, answer } = data;
   const studentName = socket.userName;
-
+  
   try {
     if (!code || !answer || !answer.questionId || answer?.studentName !== studentName) {
       return socket.emit("error", {
@@ -172,7 +172,7 @@ export const updateTextAns = async(data, socket)=> {
         $push: {
           "questions.$[q].answersGivenBy": {
             studentName: studentName,
-            answer: answer.textAnswer || "Skipped"
+            answer: answer.textAnswer.trim() || "Skipped"
           }
         }
       },
